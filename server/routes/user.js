@@ -6,11 +6,15 @@ import User from "../db/schema.js";
 import { ObjectId } from "mongodb";
 const router = express.Router();
 
-router.post("/create_account", async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-        const user = new User(req.body);
-        await user.save()
-        res.send(result).status(204);
+        const user = new User({
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password,
+        });
+        user.save();
+        res.status(204).send();
     } catch (err) {
         console.error(err);
         res.status(500).send("Error adding record");

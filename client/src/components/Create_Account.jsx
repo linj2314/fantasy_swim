@@ -20,13 +20,14 @@ export default function Create_Account() {
         e.preventDefault();
         const user = { ...form };
 		try {
-			response = await post("http://127.0.0.1:5173/create_account", {
+			let response = await fetch("http://localhost:5050/user", {
 				method: "POST",
 				headers: {
-					"Content-Type:": "application/json",
+					"Content-Type": "application/json",
 				},
 				body: JSON.stringify(user),
-			})
+			});
+            console.log("sent")
 
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -43,9 +44,11 @@ export default function Create_Account() {
         <>
             <div className="flex flex-col items-center justify-center h-screen">
             <h3 className="text-lg font-semibold p-4">Create New Account</h3>
-            <form>
+            <form
+                onSubmit={onSubmit}
+            >
                 <div>
-                <label for="email">
+                <label htmlFor="email">
                     Email
                 </label>
                 </div>
@@ -58,7 +61,7 @@ export default function Create_Account() {
 				/>
                 </div>
                 <div>
-                <label for="user">
+                <label htmlFor="user">
                     Username
                 </label>
                 </div>
@@ -71,7 +74,7 @@ export default function Create_Account() {
 				/>
                 </div>
                 <div>
-                <label for="pass">
+                <label htmlFor="pass">
                     Password
                 </label>
                 </div>

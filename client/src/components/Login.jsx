@@ -24,7 +24,7 @@ export default function Login() {
                 <h3 className="text-lg font-semibold p-4">Login</h3>
                     <form>
                     <div>
-                        <label for="user/email">
+                        <label htmlFor="user/email">
                             Username / Email
                         </label>
                     </div>
@@ -32,7 +32,7 @@ export default function Login() {
                         <input type="text" id="user/email" className="rounded-md border-2"/>
                     </div>
                     <div>
-                        <label for="pass">
+                        <label htmlFor="pass">
                             Password
                         </label>
                     </div>

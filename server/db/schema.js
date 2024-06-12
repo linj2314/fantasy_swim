@@ -1,6 +1,8 @@
 const uri = process.env.URI || "";
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+
+const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -33,15 +35,19 @@ userSchema.methods.comparePassword = async function(password) {
     }
 }
 
-try {
-    await mongoose.connect(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
-} catch(err) {
-    console.error(err)
+const User = mongoose.model("User", userSchema);
+
+async function run() {
+    try {
+        // Create a Mongoose client with a MongoClientOptions object to set the Stable API version
+        await mongoose.connect(uri, clientOptions);
+        await mongoose.connection.db.admin().command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB! (through mongoose)");
+    } catch(err) {
+        console.err(err)
+    }
 }
 
-const User = mongoose.model("User", userSchema);
+run().catch(console.dir);
 
 export default User;
