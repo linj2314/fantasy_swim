@@ -3,33 +3,63 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 export default function Login() {
-    /*
-    [form, setForm] = useState({
-        user_email: "",
+    const [form, setForm] = useState({
+        username: "",
+        email: "",
         password: "",
-    })
-    const params = useParams();
+    });
     const navigate = useNavigate();
 
+	function updateForm(value) {
+		return setForm((prev) => {
+			return { ...prev, ...value}
+		});
+	}
+	
     async function onSubmit(e) {
         e.preventDefault();
         const user = { ...form };
+		try {
+			const response = await fetch("http://localhost:5050/user/login", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(user),
+			});
 
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+            const result = await response.json();
+            localStorage.setItem("token", result.token);
+
+            navigate("/home");
+		} catch(error) {
+			console.error('A problem while logging in ', error);
+		}
     }
-    */
 
     return(
         <>
             <div className="flex flex-col items-center justify-center h-screen">
                 <h3 className="text-lg font-semibold p-4">Login</h3>
-                    <form>
+                    <form
+                        onSubmit={ onSubmit }
+                    >
                     <div>
                         <label htmlFor="user/email">
                             Username / Email
                         </label>
                     </div>
                     <div className="pb-5">
-                        <input type="text" id="user/email" className="rounded-md border-2"/>
+                        <input 
+                            type="text" 
+                            id="user/email" 
+                            className="rounded-md border-2"
+                            onChange={(e) => {updateForm({username: e.target.value, email: e.target.value})}}
+                        />
                     </div>
                     <div>
                         <label htmlFor="pass">
@@ -37,7 +67,12 @@ export default function Login() {
                         </label>
                     </div>
                     <div className="pb-5">
-                        <input type="text" id="pass" className="rounded-md border-2"/>
+                        <input 
+                            type="text" 
+                            id="pass" 
+                            className="rounded-md border-2"
+                            onChange={(e) => {updateForm({password: e.target.value})}}
+                        />
                     </div>
                     <div className="flex justify-center">
                     <input 

@@ -27,7 +27,6 @@ export default function Create_Account() {
 				},
 				body: JSON.stringify(user),
 			});
-            console.log("sent")
 
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -79,7 +78,12 @@ export default function Create_Account() {
                 </label>
                 </div>
                 <div className="pb-5">
-                <input type="text" id="pass" className="rounded-md border-2"/>
+                <input 
+                    type="text" 
+                    id="pass" 
+                    className="rounded-md border-2"
+                    onChange={(e) => {updateForm({password: e.target.value})}}
+                />
                 </div>
                 <div className="flex justify-center">
                 <input 

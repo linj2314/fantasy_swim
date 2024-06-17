@@ -1,25 +1,71 @@
 import express from "express";
-
 import db from "../db/connection.js";
 import User from "../db/schema.js";
-
 import { ObjectId } from "mongodb";
+import auth from "../middleware/auth.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 const router = express.Router();
+const secretKey = process.env.JWT_SECRET;
+const expireTime = process.env.JWT_EXPIRE;
 
 router.post("/", async (req, res) => {
     try {
+        console.log(req.body.username);
+        console.log(req.body.email);
+        console.log(req.body.password);
+        const pass = await bcrypt.hash(req.body.password, 8);
         const user = new User({
             username: req.body.username,
             email: req.body.email,
-            password: req.body.password,
+            password: pass,
         });
-        user.save();
+        await user.save();
         res.status(204).send();
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error adding record");
+        res.status(500).send("Error creating account");
+    }
+}); 
+
+router.post('/login', async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+
+        let user = await User.findOne({ username: username });
+        if (!user) {
+            user = await User.findOne({ email: email });
+        }
+    
+        if (!user) {
+            console.log("couldn't find account");
+            return res.status(401).json({ error: 'Authentication failed try again' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+   
+        if (!passwordMatch) {
+            console.log("couldn't match password");
+            return res.status(401).json({ error: 'Authentication failed try again' });
+        }
+   
+        // Create a JWT token
+        const token = jwt.sign({ userId: user._id, email: user.email }, secretKey, {
+            expiresIn: expireTime,
+        });
+   
+        res.status(200).json({ token: token, userId: user._id });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Authentication failed try again' });
     }
 });
+
+//protected paths
+
+router.get("/home", auth, (req, res) => {
+    res.status(200).send();
+})
 
 /*
 router.get("/", async (req, res) => {

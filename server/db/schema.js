@@ -7,6 +7,7 @@ const clientOptions = { serverApi: { version: '1', strict: true, deprecationErro
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
+        unique: true
     },
     email: {
         type: String,
@@ -17,11 +18,12 @@ const userSchema = new mongoose.Schema({
     },
 })
 
+/*
 userSchema.pre("save", async function(next) {
     if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 8)
+        this.password = await bcrypt.hash(this.password, 8);
     }
-    next()
+    next();
 });
 
 userSchema.methods.comparePassword = async function(password) {
@@ -34,6 +36,7 @@ userSchema.methods.comparePassword = async function(password) {
         console.error(err)
     }
 }
+*/
 
 const User = mongoose.model("User", userSchema);
 
