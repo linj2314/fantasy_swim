@@ -7,7 +7,7 @@ const clientOptions = { serverApi: { version: '1', strict: true, deprecationErro
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
-        unique: true
+        unique: true,
     },
     email: {
         type: String,
@@ -16,28 +16,23 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
     },
-})
-
-/*
-userSchema.pre("save", async function(next) {
-    if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 8);
-    }
-    next();
+    leagues: [{ type: String }],
 });
 
-userSchema.methods.comparePassword = async function(password) {
-    if (!password) throw new Error("No password provided");
+const leagueSchema = new mongoose.Schema({
+    name: {
+        type: String,
+    },
+    duration: {
+        type: Number,
+    },
+    started: {
+        type: Number,
+    },
+    swimmers: [{ type: String }],
+});
 
-    try {
-        const result = await bcrypt.compare(password, this.password);
-        return result;
-    } catch(err) {
-        console.error(err)
-    }
-}
-*/
-
+const League = mongoose.model("League", leagueSchema);
 const User = mongoose.model("User", userSchema);
 
 async function run() {
@@ -53,4 +48,4 @@ async function run() {
 
 run().catch(console.dir);
 
-export default User;
+export { User, League };
