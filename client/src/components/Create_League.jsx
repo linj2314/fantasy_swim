@@ -1,15 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Create_League({show, close}) {
-    if (!show) {
-        return null;
-    }
-
     const [name, setName] = useState("");
     const [dur, setDur] = useState("");
+    const [query, setQuery] = useState("");
+    const [list, setList] = useState([]);
+    const [addedList, setAddedList] = useState([]);
     const navigate = useNavigate();
     let id = null;
+
+    useEffect(() => {
+        async function get_response() {
+            if (!query) {
+                setList([]);
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5050/league/api/search/" + query, {
+                    method: "GET",
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const filtered = result.filter((obj) => {return(obj.source == "Swimmers" || obj.source == "Teams")});
+                setList(filtered);
+            } catch(error) {
+                console.error("Error occured while fetching data", error);
+            }
+        }
+
+        get_response();
+    }, [query]);
 
     async function verify() {
         const response = await fetch("http://localhost:5050/user/home", {
@@ -26,6 +53,7 @@ export default function Create_League({show, close}) {
         const result = await response.json();
         id = result.userId;
     }
+
     
     verify();
 
@@ -76,10 +104,75 @@ export default function Create_League({show, close}) {
         }
     }
 
+    function clickFunction() {
+        //TODO
+    }
+
+    function clickDropdown(obj) {
+        if (obj.source == "Swimmers") {
+            let found = false;
+            for (const a of addedList) {
+                if (obj.id == a.id) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                setAddedList((prev) => [...prev, obj]);
+            }
+        } else {
+
+        }
+    }
+
+    function Dropdown_Item({obj}) {
+        return(
+            <div 
+                className="flex flex-row justify-between w-full p-2 rounded hover:bg-slate-300"
+                onClick={() => clickDropdown(obj)}
+            >
+                <div className="flex flex-col w-10/12">
+                    <h3 className="text-lg font-semibold truncate">{obj.name}</h3>
+                    <span>{obj.location}</span>
+                </div>
+                <div>
+                    <h3>{obj.source.slice(0, -1)}</h3>
+                </div>
+            </div>
+        );
+    }
+    
+    const dropdown_items = list.map((l) =>
+        <Dropdown_Item key={l.id} obj={l}/>
+    );
+
+    function Added_Swimmer({obj}) {
+        return(
+            <>
+                <div 
+                    className="flex flex-row justify-between w-full p-2 rounded"
+                >
+                    <div className="flex flex-col w-10/12">
+                        <h3 className="text-lg font-semibold truncate">{obj.name}</h3>
+                        <span>{obj.location}</span>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
+    const added_swimmers = addedList.map((s) =>
+        <Added_Swimmer key={ uuidv4() } obj={s}/>
+    );
+    
+    if (!show) {
+        return null;
+    }
+
     return(
         <div className="flex h-screen w-screen justify-center items-center fixed">
-            <div className="bg-slate-100 p-10 shadow-lg h-screen flex flex-col">
-                <form onSubmit={onSubmit}>
+            <div className="bg-slate-100 p-10 shadow-lg h-screen w-1/3 flex flex-col">
+                <form onSubmit={onSubmit} className="flex flex-col grow">
                     <div className="flex flex-col grow">
                         <div className="flex justify-between border-b-2 border-slate-500 p-4">
                             <h3 className="text-3xl font-semibold pr-48">
@@ -114,16 +207,24 @@ export default function Create_League({show, close}) {
                                 onChange={(e)=>{setDur(e.target.value)}}
                             />
                         </div>
-                        <div className="p-4 flex justify-center items-center">
+                        <div className={`p-4 flex flex-col justify-center items-center rounded-lg w-full ${list.length > 0 ? 'border border-black' : ''}`}>
                             <input 
+                                type="text"
                                 className="p-2 rounded-lg border border-black w-full"
                                 placeholder="Search for swimmers by school, team, name, etc."
+                                onChange={(e)=>{setQuery(e.target.value)}}
                             />
+                            {dropdown_items}
+                        </div>
+                        <div className="flex flex-col p-4 overflow-auto">
+                            <h3 className="text-lg font-semibold">Added: </h3>
+                            {added_swimmers}
                         </div>
                     </div>
                     <div className="flex flex-row justify-end">
                         <button 
                             className="rounded-lg p-4 bg-blue-500 hover:bg-blue-600 text-white"
+                            onClick={clickFunction}
                         >
                             Create League
                         </button>
