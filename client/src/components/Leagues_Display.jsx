@@ -1,37 +1,73 @@
+import { useState, useEffect } from "react";
+
 export default function Leagues_Display() {
-    const num_windows = [1, 2, 3, 4, 5];
+    const [leagues, setLeagues] = useState([]);
 
-    function League_Window({ league_id }) {
-        const creator = "";
-        const started_on = "";
+    async function verify() {
+        const response = await fetch("http://localhost:5050/user/home", {
+            method: "GET",
+            headers: {
+                "Authorization": localStorage.getItem("token"),
+            },
+        });
 
-        try {
-            /*
-            const response = await fetch(`http://localhost:5050/league/search?q=${encodeURIComponent(key)}`);
-
-            if (!response.ok) {
-                throw new Error("Could not retrieve league");
-            }
-
-            const result = await response.json();
-
-            */
-        } catch(error) {
-            console.error("There was a problem while retrieving leagues", error);
+        if (!response.ok) {
+            navigate("/");
         }
 
+        const result = await response.json();
+        return result.userId;
+    }
+
+    useEffect(() => {
+        async function get_leagues() {
+            const id = await verify();
+            try {
+                const response = await fetch("http://localhost:5050/user/league", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                    }),
+                });
+                const result = await response.json();
+                setLeagues(result);
+                console.log(leagues);
+            } catch(error) {
+                console.log(error);
+            }
+        }
+        get_leagues();
+    }, [])
+
+    function League_Window({ obj }) {
+        const statuses = ["League not yet started", "League in progress", "League finished"];
+
         return(
-            <div className="h-full p-4 rounded-lg shadow-lg bg-violet-500 text-center">1</div>
+            <div className="h-full rounded-lg shadow-lg flex flex-col">
+                <div className="rounded-t-lg bg-slate-200 border-b-2 border-slate-500 text-3xl">
+                    {obj.name}
+                </div>
+                <div>
+                    {statuses[obj.started]}
+                </div>
+            </div>
         );
     }
 
-    const windows = num_windows.map(id => <League_Window key={ id } league_id={ id }/>);
+    const windows = leagues.map(l => <League_Window key={ l._id } obj={ l }/>);
 
     return(
         <>
             <div className="grid grid-cols-3 grid-rows-3 gap-4 p-3 h-screen items-center justify-center">
                 {windows}
-                {(num_windows.length == 0) ? "When you join/create leagues, they will appear here" : ""}
+                {leagues.length == 0 && (
+                    <div className="col-span-3 row-span-3 flex items-center justify-center">
+                        When you join/create leagues, they will appear here
+                    </div>
+                )}
             </div>
         </>
     );

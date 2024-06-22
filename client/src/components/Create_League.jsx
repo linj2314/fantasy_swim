@@ -57,6 +57,19 @@ export default function Create_League({show, close}) {
     
     verify();
 
+    function reset_fields() {
+        setName("");
+        setDur("");
+        setList([]);
+        setAddedList([]);
+        setQuery("");
+    }
+
+    function close_window() {
+        reset_fields();
+        close();
+    }
+
     async function onSubmit(e) {
         e.preventDefault();
         try {
@@ -68,7 +81,7 @@ export default function Create_League({show, close}) {
                 body: JSON.stringify({
                     name: name,
                     duration: dur,
-                    swimmers: [],
+                    swimmers: addedList.map((obj) => obj.id),
                 }),
             });
 
@@ -97,15 +110,12 @@ export default function Create_League({show, close}) {
             if (!response2.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            navigate("/home");
         } catch(error) {
             console.error("An error occured while creating league", error);
+        } finally {
+            close_window();
+            reset_fields();
         }
-    }
-
-    function clickFunction() {
-        //TODO
     }
 
     function clickDropdown(obj) {
@@ -156,6 +166,18 @@ export default function Create_League({show, close}) {
                         <h3 className="text-lg font-semibold truncate">{obj.name}</h3>
                         <span>{obj.location}</span>
                     </div>
+                    <div>
+                        <button 
+                            className="rounded hover:bg-red-500 hover:text-white text-2xl w-6"
+                            onClick={() => setAddedList((prev) => 
+                                prev.filter((item) => 
+                                    item.id != obj.id
+                                )
+                            )}
+                        >
+                            &times;
+                        </button>
+                    </div>
                 </div>
             </>
         );
@@ -179,7 +201,7 @@ export default function Create_League({show, close}) {
                                 Create League
                             </h3>
                             <button
-                                onClick={close}
+                                onClick={close_window}
                                 className="text-3xl rounded-lg hover:bg-slate-200 w-8 h-8"
                             >
                                 <span>
@@ -207,27 +229,32 @@ export default function Create_League({show, close}) {
                                 onChange={(e)=>{setDur(e.target.value)}}
                             />
                         </div>
-                        <div className={`p-4 flex flex-col justify-center items-center rounded-lg w-full ${list.length > 0 ? 'border border-black' : ''}`}>
-                            <input 
-                                type="text"
-                                className="p-2 rounded-lg border border-black w-full"
-                                placeholder="Search for swimmers by school, team, name, etc."
-                                onChange={(e)=>{setQuery(e.target.value)}}
-                            />
-                            {dropdown_items}
+                        <div className="p-4 flex flex-col justify-center items-center rounded-lg w-full">
+                            <div className="w-full relative">
+                                <input 
+                                    type="text"
+                                    className="p-2 rounded-lg border border-black w-full"
+                                    placeholder="Search for swimmers by school, team, name, etc."
+                                    onChange={(e)=>{setQuery(e.target.value)}}
+                                />
+                                <div className={`absolute w-full bg-slate-100 rounded rounded-xl ${list.length > 0 ? 'border border-black' : ''}`}>
+                                    {dropdown_items}
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex flex-col p-4 overflow-auto">
+                        <div className="flex flex-col p-4">
                             <h3 className="text-lg font-semibold">Added: </h3>
-                            {added_swimmers}
+                            <div className="h-96 overflow-y-auto">
+                                {added_swimmers}
+                            </div>
                         </div>
                     </div>
                     <div className="flex flex-row justify-end">
-                        <button 
-                            className="rounded-lg p-4 bg-blue-500 hover:bg-blue-600 text-white"
-                            onClick={clickFunction}
-                        >
-                            Create League
-                        </button>
+                        <input 
+                            type="submit"
+                            value="Create League"
+                            className="p-2 rounded rounded-lg bg-blue-400 text-lg hover:bg-blue-500 hover:text-white"
+                        />
                     </div>
                 </form>
             </div>

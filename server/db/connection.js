@@ -1,3 +1,5 @@
+//don't really need this file anymore
+
 import { MongoClient, ServerApiVersion} from "mongodb";
 
 const uri = process.env.URI || "";

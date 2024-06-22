@@ -1,7 +1,5 @@
 import express from "express";
-import db from "../db/connection.js";
-import { User } from "../db/schema.js";
-import { ObjectId } from "mongodb";
+import { User, League } from "../db/schema.js";
 import auth from "../middleware/auth.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -53,11 +51,12 @@ router.post('/login', async (req, res) => {
    
         res.status(200).json({ token: token, userId: user._id });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ error: 'Authentication failed try again' });
     }
 });
 
+//for adding another league to the users list of leagues
 router.patch('/league', async (req, res) => {
     try {
         let user = await User.findById(req.body.id);
@@ -77,8 +76,32 @@ router.patch('/league', async (req, res) => {
 
         res.status(200);
     } catch(error) {
-        console.log(error);
+        console.error(error);
         res.status(500).send("Error while updating user's leagues");
+    }
+});
+
+//for retrieving user leagues
+router.post("/league", async (req, res) => {
+    try {
+        let user = await User.findById(req.body.id);
+
+        if (!user) {
+            console.log("couldn't find account");
+            return res.status(404).json({ error: 'Adding league failed' });
+        }
+
+        const leagues = [];
+
+        for (const l of user.leagues) {
+            const league = await League.findById(l);
+            leagues.push(league);
+        }
+
+        res.status(200).json(leagues);
+    } catch(error) {
+        console.error(error);
+        res.status(500).send("Error while retrieving list of user's leagues");
     }
 });
 
@@ -88,57 +111,4 @@ router.get("/home", auth, (req, res) => {
     res.status(200).json({ userId: req.userId });
 });
 
-/*
-router.get("/", async (req, res) => {
-    let collection = await db.collection("UserData");
-    let results = await collection.find({}).toArray();
-    res.send(results).status(200);
-});
-  
-  // This section will help you get a single record by id
-router.get("/:id", async (req, res) => {
-    let collection = await db.collection("UserData");
-    let query = { _id: new ObjectId(req.params.id) };
-    let result = await collection.findOne(query);
-  
-    if (!result) res.send("Not found").status(404);
-    else res.send(result).status(200);
-});
-  
-  // This section will help you update a record by id.
-router.patch("/:id", async (req, res) => {
-    try {
-        const query = { _id: new ObjectId(req.params.id) };
-        const updates = {
-            $set: {
-            name: req.body.name,
-            position: req.body.position,
-            level: req.body.level,
-            },
-        };
-  
-        let collection = await db.collection("UserData");
-        let result = await collection.updateOne(query, updates);
-        res.send(result).status(200);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Error updating record");
-    }
-});
-  
-  // This section will help you delete a record
-router.delete("/:id", async (req, res) => {
-    try {
-        const query = { _id: new ObjectId(req.params.id) };
-  
-        const collection = db.collection("UserData");
-        let result = await collection.deleteOne(query);
-  
-        res.send(result).status(200);
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Error deleting record");
-    }
-});
-*/
 export default router;
