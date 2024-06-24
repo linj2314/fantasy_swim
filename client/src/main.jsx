@@ -10,6 +10,7 @@ import Create_Account from "./components/Create_Account";
 import Home from "./components/Home";
 import Error_Page from "./components/Error_Page";
 import Leagues_Display from "./components/Leagues_Display";
+import League_View from "./components/League_View";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: "/home",
         element: <Leagues_Display />,
+      },
+      {
+        path: "/home/league_view/:id",
+        element: <League_View />
       },
     ],
   },

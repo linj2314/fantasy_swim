@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
+import Loading from "./Loading";
+import verify from "./Verify";
 
 export default function Create_League({show, close}) {
     const [name, setName] = useState("");
@@ -8,8 +10,8 @@ export default function Create_League({show, close}) {
     const [query, setQuery] = useState("");
     const [list, setList] = useState([]);
     const [addedList, setAddedList] = useState([]);
+    const [showLoading, setShowLoading] = useState(false);
     const navigate = useNavigate();
-    let id = null;
 
     useEffect(() => {
         async function get_response() {
@@ -38,6 +40,7 @@ export default function Create_League({show, close}) {
         get_response();
     }, [query]);
 
+    /*
     async function verify() {
         const response = await fetch("http://localhost:5050/user/home", {
             method: "GET",
@@ -54,8 +57,8 @@ export default function Create_League({show, close}) {
         id = result.userId;
     }
 
-    
     verify();
+    */
 
     function reset_fields() {
         setName("");
@@ -72,6 +75,7 @@ export default function Create_League({show, close}) {
 
     async function onSubmit(e) {
         e.preventDefault();
+        let id = await verify();
         try {
             const response = await fetch("http://localhost:5050/league", {
                 method: "POST",
@@ -82,6 +86,7 @@ export default function Create_League({show, close}) {
                     name: name,
                     duration: dur,
                     swimmers: addedList.map((obj) => obj.id),
+                    userId: id,
                 }),
             });
 
@@ -92,9 +97,11 @@ export default function Create_League({show, close}) {
             const result = await response.json();
             const league_id = result.id;
 
+            /*
             if (!id) {
                 verify();
             }
+            */
 
             const response2 = await fetch("http://localhost:5050/user/league", {
                 method: "PATCH",
@@ -113,12 +120,14 @@ export default function Create_League({show, close}) {
         } catch(error) {
             console.error("An error occured while creating league", error);
         } finally {
+            console.log("League Created!")
             close_window();
             reset_fields();
+            window.location.reload();
         }
     }
 
-    function clickDropdown(obj) {
+    async function clickDropdown(obj) {
         if (obj.source == "Swimmers") {
             let found = false;
             for (const a of addedList) {
@@ -131,8 +140,20 @@ export default function Create_League({show, close}) {
                 setAddedList((prev) => [...prev, obj]);
             }
         } else {
-
+            setShowLoading(true);
+            try {
+                const response = await fetch("http://localhost:5050/league/roster/" + obj.url.split("/")[2], {
+                    method: "GET",
+                });
+                const results = await response.json();
+                setAddedList((prev) => [...prev, ...results]);
+            } catch(error) {
+                console.error(error);
+            }
+            setShowLoading(false);
         }
+        setList([]);
+        setQuery("");
     }
 
     function Dropdown_Item({obj}) {
@@ -192,72 +213,76 @@ export default function Create_League({show, close}) {
     }
 
     return(
-        <div className="flex h-screen w-screen justify-center items-center fixed">
-            <div className="bg-slate-100 p-10 shadow-lg h-screen w-1/3 flex flex-col">
-                <form onSubmit={onSubmit} className="flex flex-col grow">
-                    <div className="flex flex-col grow">
-                        <div className="flex justify-between border-b-2 border-slate-500 p-4">
-                            <h3 className="text-3xl font-semibold pr-48">
-                                Create League
-                            </h3>
-                            <button
-                                onClick={close_window}
-                                className="text-3xl rounded-lg hover:bg-slate-200 w-8 h-8"
-                            >
-                                <span>
-                                    &times;
-                                </span>
-                            </button>
-                        </div>
-                        <div className="flex flex-row p-4 justify-between">
-                            <h3 className="text-lg">
-                                League Name
-                            </h3>
-                            <input 
-                                type="text"
-                                className="rounded-lg border border-black w-64"
-                                onChange={(e)=>{setName(e.target.value)}}
-                            />
-                        </div>
-                        <div className="flex flex-row p-4 justify-between">
-                            <h3 className="text-lg">
-                                Duration of League (days)
-                            </h3>
-                            <input 
-                                type="number"
-                                className="rounded-lg border border-black w-12"
-                                onChange={(e)=>{setDur(e.target.value)}}
-                            />
-                        </div>
-                        <div className="p-4 flex flex-col justify-center items-center rounded-lg w-full">
-                            <div className="w-full relative">
+        <>
+            <Loading show={showLoading}/>
+            <div className="h-screen w-screen fixed opacity-25 bg-gray-800 flex items-center justify-center"></div>
+            <div className="flex h-screen w-screen justify-center items-center fixed">
+                <div className="bg-slate-100 p-10 shadow-lg h-screen w-1/3 flex flex-col">
+                    <form onSubmit={onSubmit} className="flex flex-col grow">
+                        <div className="flex flex-col grow">
+                            <div className="flex justify-between border-b-2 border-slate-500 p-4">
+                                <h3 className="text-3xl font-semibold pr-48">
+                                    Create League
+                                </h3>
+                                <button
+                                    onClick={close_window}
+                                    className="text-3xl rounded-lg hover:bg-slate-200 w-8 h-8"
+                                >
+                                    <span>
+                                        &times;
+                                    </span>
+                                </button>
+                            </div>
+                            <div className="flex flex-row p-4 justify-between">
+                                <h3 className="text-lg">
+                                    League Name
+                                </h3>
                                 <input 
                                     type="text"
-                                    className="p-2 rounded-lg border border-black w-full"
-                                    placeholder="Search for swimmers by school, team, name, etc."
-                                    onChange={(e)=>{setQuery(e.target.value)}}
+                                    className="rounded-lg border border-black w-64"
+                                    onChange={(e)=>{setName(e.target.value)}}
                                 />
-                                <div className={`absolute w-full bg-slate-100 rounded rounded-xl ${list.length > 0 ? 'border border-black' : ''}`}>
-                                    {dropdown_items}
+                            </div>
+                            <div className="flex flex-row p-4 justify-between">
+                                <h3 className="text-lg">
+                                    Duration of League (days)
+                                </h3>
+                                <input 
+                                    type="number"
+                                    className="rounded-lg border border-black w-12"
+                                    onChange={(e)=>{setDur(e.target.value)}}
+                                />
+                            </div>
+                            <div className="p-4 flex flex-col justify-center items-center rounded-lg w-full">
+                                <div className="w-full relative">
+                                    <input 
+                                        type="text"
+                                        className="p-2 rounded-lg border border-black w-full"
+                                        placeholder="Search for swimmers by school, team, name, etc."
+                                        onChange={(e)=>{setQuery(e.target.value)}}
+                                    />
+                                    <div className={`absolute w-full bg-slate-100 rounded rounded-xl ${list.length > 0 ? 'border border-black' : ''}`}>
+                                        {dropdown_items}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col p-4">
+                                <h3 className="text-lg font-semibold">Added: </h3>
+                                <div className="h-96 overflow-y-auto">
+                                    {added_swimmers}
                                 </div>
                             </div>
                         </div>
-                        <div className="flex flex-col p-4">
-                            <h3 className="text-lg font-semibold">Added: </h3>
-                            <div className="h-96 overflow-y-auto">
-                                {added_swimmers}
-                            </div>
+                        <div className="flex flex-row justify-end">
+                            <input 
+                                type="submit"
+                                value="Create League"
+                                className="p-2 rounded rounded-lg bg-blue-400 text-lg hover:bg-blue-500 hover:text-white"
+                            />
                         </div>
-                    </div>
-                    <div className="flex flex-row justify-end">
-                        <input 
-                            type="submit"
-                            value="Create League"
-                            className="p-2 rounded rounded-lg bg-blue-400 text-lg hover:bg-blue-500 hover:text-white"
-                        />
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
+        </>
     );
 }

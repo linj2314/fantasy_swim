@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import verify from "./Verify"
 
 export default function Leagues_Display() {
     const [leagues, setLeagues] = useState([]);
+    const navigate = useNavigate();
 
+    /*
     async function verify() {
         const response = await fetch("http://localhost:5050/user/home", {
             method: "GET",
@@ -18,6 +22,7 @@ export default function Leagues_Display() {
         const result = await response.json();
         return result.userId;
     }
+    */
 
     useEffect(() => {
         async function get_leagues() {
@@ -34,7 +39,6 @@ export default function Leagues_Display() {
                 });
                 const result = await response.json();
                 setLeagues(result);
-                console.log(leagues);
             } catch(error) {
                 console.log(error);
             }
@@ -46,12 +50,18 @@ export default function Leagues_Display() {
         const statuses = ["League not yet started", "League in progress", "League finished"];
 
         return(
-            <div className="h-full rounded-lg shadow-lg flex flex-col">
-                <div className="rounded-t-lg bg-slate-200 border-b-2 border-slate-500 text-3xl">
+            <div 
+                className="h-full rounded-lg shadow-lg flex flex-col m-4 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300"
+                onClick={() => navigate("/home/league_view/" + obj._id)}
+            >
+                <div className="rounded-t-lg bg-slate-200 border-b-2 border-slate-500 text-3xl p-2">
                     {obj.name}
                 </div>
-                <div>
+                <div className="flex flex-col p-2 grow">
                     {statuses[obj.started]}
+                </div>
+                <div className="p-2 text-xl font-semibold">
+                    Join Code: {obj.join}
                 </div>
             </div>
         );

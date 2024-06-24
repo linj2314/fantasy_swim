@@ -34,7 +34,10 @@ const Home = () => {
             <Create_League show={showCreate} close={close_create_league}/> 
             <div className="flex flex-row h-screen">
                 <div className="flex-col basis-1/6 bg-slate-100 items-center">
-                    <div className="hover:bg-slate-200 hover:cursor-pointer">
+                    <div 
+                        className="hover:bg-slate-200 hover:cursor-pointer"
+                        onClick={() => navigate("/home")}
+                    >
                         <div className="p-3 text-lg">
                             Home
                         </div>

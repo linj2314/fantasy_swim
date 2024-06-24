@@ -67,14 +67,14 @@ router.patch('/league', async (req, res) => {
         }
 
         if (user.leagues.length == 9) {
-            return res.status(460).send("Cannot add another league");
+            return res.status(507).send("Cannot add another league");
         }
 
         user.leagues.push(req.body.league_id);
 
         await user.save();
 
-        res.status(200);
+        res.status(204).send("League successfully added");
     } catch(error) {
         console.error(error);
         res.status(500).send("Error while updating user's leagues");
@@ -87,7 +87,7 @@ router.post("/league", async (req, res) => {
         let user = await User.findById(req.body.id);
 
         if (!user) {
-            console.log("couldn't find account");
+            console.log("couldn't find account while retrieving leagues");
             return res.status(404).json({ error: 'Adding league failed' });
         }
 
@@ -101,7 +101,7 @@ router.post("/league", async (req, res) => {
         res.status(200).json(leagues);
     } catch(error) {
         console.error(error);
-        res.status(500).send("Error while retrieving list of user's leagues");
+        res.status(500).json({error: "Error while retrieving list of user's leagues"});
     }
 });
 

@@ -30,6 +30,10 @@ const leagueSchema = new mongoose.Schema({
         type: Number,
     },
     swimmers: [{ type: String }],
+    join: {
+        type: String,
+    },
+    participants: [{ type: String }],
 });
 
 const League = mongoose.model("League", leagueSchema);
