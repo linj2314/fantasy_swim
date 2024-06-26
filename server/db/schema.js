@@ -26,7 +26,7 @@ const leagueSchema = new mongoose.Schema({
     duration: {
         type: Number,
     },
-    started: {
+    status: {
         type: Number,
     },
     swimmers: [{ type: String }],
@@ -34,6 +34,9 @@ const leagueSchema = new mongoose.Schema({
         type: String,
     },
     participants: [{ type: String }],
+    creator: {
+        type: String,
+    },
 });
 
 const League = mongoose.model("League", leagueSchema);

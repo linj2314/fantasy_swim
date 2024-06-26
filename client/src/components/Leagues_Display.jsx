@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import verify from "./Verify"
+import { useNavigate, useParams } from "react-router-dom";
+import verify from "./Verify";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Confirm_Delete_League from "./Confirm_Delete_League";
 
 export default function Leagues_Display() {
     const [leagues, setLeagues] = useState([]);
     const navigate = useNavigate();
+    const { id } = useParams();
+    const [showConfirm, setShowConfirm] = useState(false);
+
+    const open_delete_league = () => { setShowConfirm(true); }
+    const close_delete_league = () => { setShowConfirm(false); }
 
     /*
     async function verify() {
@@ -26,7 +33,6 @@ export default function Leagues_Display() {
 
     useEffect(() => {
         async function get_leagues() {
-            const id = await verify();
             try {
                 const response = await fetch("http://localhost:5050/user/league", {
                     method: "POST",
@@ -37,6 +43,11 @@ export default function Leagues_Display() {
                         id: id,
                     }),
                 });
+
+                if (!response.ok) {
+                    throw new Error("Error while retrieving user's leagues");
+                }
+
                 const result = await response.json();
                 setLeagues(result);
             } catch(error) {
@@ -44,7 +55,12 @@ export default function Leagues_Display() {
             }
         }
         get_leagues();
-    }, [])
+    }, []);
+
+    const delete_league = (e) => {
+        e.stopPropagation();
+        open_delete_league();
+    }
 
     function League_Window({ obj }) {
         const statuses = ["League not yet started", "League in progress", "League finished"];
@@ -52,10 +68,18 @@ export default function Leagues_Display() {
         return(
             <div 
                 className="h-full rounded-lg shadow-lg flex flex-col m-4 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300"
-                onClick={() => navigate("/home/league_view/" + obj._id)}
+                onClick={() => navigate("/home/" + id + "/league_view/" + obj._id)}
             >
-                <div className="rounded-t-lg bg-slate-200 border-b-2 border-slate-500 text-3xl p-2">
-                    {obj.name}
+                <div className="rounded-t-lg bg-slate-200 border-b-2 border-slate-500 p-2 flex flex-row">
+                    <div className="grow text-3xl">
+                        {obj.name}
+                    </div>
+                    <div 
+                        className="flex rounded rounded-lg bg-red-500 text-white items-center justify-center p-2 px-3 hover:cursor-pointer hover:bg-red-400"
+                        onClick={delete_league}
+                    >
+                        <FontAwesomeIcon icon="fa-trash-can" />
+                    </div>
                 </div>
                 <div className="flex flex-col p-2 grow">
                     {statuses[obj.started]}
@@ -71,6 +95,7 @@ export default function Leagues_Display() {
 
     return(
         <>
+            <Confirm_Delete_League show={showConfirm} close={close_delete_league}/>
             <div className="grid grid-cols-3 grid-rows-3 gap-4 p-3 h-screen items-center justify-center">
                 {windows}
                 {leagues.length == 0 && (

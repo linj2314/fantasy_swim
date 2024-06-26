@@ -1,5 +1,5 @@
 import express from "express";
-import { League } from "../db/schema.js";
+import { User, League } from "../db/schema.js";
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
 import {Options} from "selenium-webdriver/chrome.js";
 import crypto from "crypto";
@@ -88,10 +88,11 @@ router.post('/', async (req, res) => {
         const league = new League({
             name: req.body.name,
             duration: req.body.duration,
-            started: 0,
+            status: 0,
             swimmers: req.body.swimmers,
             join: code,
             participants: [req.body.userId],
+            creator: req.body.userId,
         });
         const id = league._id.toString();
         await league.save();
@@ -120,6 +121,42 @@ router.post('/participant', async (req, res) => {
     } catch(error) {
         console.log(error);
         res.status(500).json({error: "Error while adding new participant to league"});
+    }
+});
+
+//for retrieving a league's information
+router.post('/info', async (req, res) => {
+    try {
+        const league = await League.findById(req.body.league_id);
+
+        if (!league) {
+            return res.status(404).json({error: "league not found"});
+        }
+
+        res.status(200).json(league);
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({error: "Error while retrieving league info"});
+    }
+});
+
+//for retrieving names of participants
+router.post('/participants', async (req, res) => {
+    try {
+        const ret = [];
+        for (const user_id of req.body.participants) {
+            const user = await User.findById(user_id);
+
+            if (!user) {
+                return res.status(404).json({error: "Could not find one or more participants"});
+            }
+
+            ret.push(user.username);
+        }
+        res.status(200).json(ret);
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({error: "Error while retrieving names of league participants"});
     }
 });
 

@@ -45,7 +45,7 @@ router.post('/login', async (req, res) => {
         }
    
         // Create a JWT token
-        const token = jwt.sign({ userId: user._id, email: user.email }, secretKey, {
+        const token = jwt.sign({ userId: user._id, email: user.email, username: user.username }, secretKey, {
             expiresIn: expireTime,
         });
    
@@ -108,7 +108,7 @@ router.post("/league", async (req, res) => {
 //protected paths
 
 router.get("/home", auth, (req, res) => {
-    res.status(200).json({ userId: req.userId });
+    res.status(200).json({ userId: req.userId, email: req.email, username: req.username });
 });
 
 export default router;

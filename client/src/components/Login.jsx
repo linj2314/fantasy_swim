@@ -33,9 +33,10 @@ export default function Login() {
 			}
 
             const result = await response.json();
+            const id = result.userId;
             localStorage.setItem("token", result.token);
 
-            navigate("/home");
+            navigate("/home/" + id);
 		} catch(error) {
 			console.error('A problem while logging in ', error);
 		}
