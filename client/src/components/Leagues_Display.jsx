@@ -9,6 +9,7 @@ export default function Leagues_Display() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [showConfirm, setShowConfirm] = useState(false);
+    const [leagueId, setLeagueId] = useState("");
 
     const open_delete_league = () => { setShowConfirm(true); }
     const close_delete_league = () => { setShowConfirm(false); }
@@ -57,8 +58,9 @@ export default function Leagues_Display() {
         get_leagues();
     }, []);
 
-    const delete_league = (e) => {
+    const delete_league = (e, league_id) => {
         e.stopPropagation();
+        setLeagueId(league_id);
         open_delete_league();
     }
 
@@ -76,13 +78,13 @@ export default function Leagues_Display() {
                     </div>
                     <div 
                         className="flex rounded rounded-lg bg-red-500 text-white items-center justify-center p-2 px-3 hover:cursor-pointer hover:bg-red-400"
-                        onClick={delete_league}
+                        onClick={(e) => delete_league(e, obj._id)}
                     >
                         <FontAwesomeIcon icon="fa-trash-can" />
                     </div>
                 </div>
                 <div className="flex flex-col p-2 grow">
-                    {statuses[obj.started]}
+                    {statuses[obj.status]}
                 </div>
                 <div className="p-2 text-xl font-semibold">
                     Join Code: {obj.join}
@@ -95,7 +97,7 @@ export default function Leagues_Display() {
 
     return(
         <>
-            <Confirm_Delete_League show={showConfirm} close={close_delete_league}/>
+            <Confirm_Delete_League show={showConfirm} close={close_delete_league} league_id={leagueId}/>
             <div className="grid grid-cols-3 grid-rows-3 gap-4 p-3 h-screen items-center justify-center">
                 {windows}
                 {leagues.length == 0 && (

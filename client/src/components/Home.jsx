@@ -41,7 +41,7 @@ const Home = () => {
             const result = await response.json();
             updateUserInfo({ username: result.username, email: result.email, });
             id = result.userId;
-            navigate("/home/" + id);
+            //navigate("/home/" + id);
         }
         
         verify();

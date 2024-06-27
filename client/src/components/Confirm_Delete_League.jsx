@@ -1,6 +1,34 @@
-export default function Confirm_Delete_League({show, close}) {
+import { useParams } from "react-router-dom";
+
+export default function Confirm_Delete_League({show, close, league_id}) {
     if (!show) {
         return null;
+    }
+
+    const { id } = useParams();
+
+    async function confirm_deletion() {
+        try {
+            const response = await fetch("http://localhost:5050/league/delete", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: id,
+                    league_id: league_id,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Server-side error occured while trying to leave/delete league");                
+            }
+        } catch(error) {
+            console.error("Error while trying to leave/delete league", error);
+        } finally {
+            close();
+            window.location.reload();
+        }
     }
 
     return(
@@ -31,6 +59,7 @@ export default function Confirm_Delete_League({show, close}) {
                     <div className="flex justify-center items-center">
                         <button 
                             className="rounded bg-blue-500 hover:bg-blue-600 text-white p-1 w-24"
+                            onClick={confirm_deletion}
                         >
                             Confirm
                         </button>

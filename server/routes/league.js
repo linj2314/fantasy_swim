@@ -160,4 +160,42 @@ router.post('/participants', async (req, res) => {
     }
 });
 
+router.delete('/delete', async (req, res) => {
+    try {
+        const league = await League.findById(req.body.league_id);
+        const user = await User.findById(req.body.id);
+
+        if (league.creator == req.body.id) {
+            await league.deleteOne();
+            for (const l in user.leagues) {
+                if (user.leagues[l] == req.body.league_id) {
+                    user.leagues.splice(l, 1);
+                    break;
+                }
+            }
+            await user.save();
+        } else {
+            for (const l in user.leagues) {
+                if (user.leagues[l] == req.body.league_id) {
+                    user.leagues.splice(l, 1);
+                    break;
+                }
+            }
+            for (const p in league.participants) {
+                if (league.participants[p] == req.body.id) {
+                    league.participants.splice(p, 1);
+                    break;
+                }
+            }
+            await user.save();
+            await league.save();
+        }
+
+        res.status(204).send("League successfully removed");
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({error: "Error while deleting/removing league"});
+    }
+});
+
 export default router;

@@ -6,6 +6,7 @@ export default function League_View() {
     const { id, league_id } = useParams();
     const [leagueInfo, setLeagueInfo] = useState({});
     const [participants, setParticipants] = useState([]);
+    const [status, setStatus] = useState(-1);
 
     useEffect(() => {
         async function retrieve_info() {
@@ -26,6 +27,7 @@ export default function League_View() {
 
                 let result = await response.json();
                 setLeagueInfo(result);
+                setStatus(result.status);
 
                 response = await fetch("http://localhost:5050/league/participants", {
                     method: "POST",
@@ -51,7 +53,7 @@ export default function League_View() {
     }, []);
 
     function Main_content() {
-        if (leagueInfo.status == 0) {
+        if (status == 0) {
             return(
                 <div className="basis-1/2 flex flex-col justify-center items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
                     <button className="rounded rounded-lg bg-blue-300 p-4 text-xl">
@@ -62,13 +64,13 @@ export default function League_View() {
                     </span>
                 </div>
             );
-        } else if (leagueInfo.status == 1) {
-
+        } else if (status == 1) {
+            
         }
     }
 
     function Standings_content() {
-        if (leagueInfo.status == 0) {
+        if (status == 0) {
             return(
                 <div className="basis-3/12 flex flex-col rounded rounded-lg border border-slate-300 m-4 justify-start">
                     <div className="basis-6/12 text-xl font-semibold text-center p-4">
