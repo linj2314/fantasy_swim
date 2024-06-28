@@ -85,7 +85,7 @@ export default function Create_League({show, close}) {
                 body: JSON.stringify({
                     name: name,
                     duration: dur,
-                    swimmers: addedList.map((obj) => obj.id),
+                    swimmers: addedList.map((obj) => ({name: obj.name, link: obj.id})),
                     userId: id,
                 }),
             });

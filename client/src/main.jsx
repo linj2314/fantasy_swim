@@ -11,7 +11,6 @@ import Home from "./components/Home";
 import Error_Page from "./components/Error_Page";
 import Leagues_Display from "./components/Leagues_Display";
 import League_View from "./components/League_View";
-import Draft from "./components/Draft";
 import "./index.css";
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
@@ -53,10 +52,6 @@ const router = createBrowserRouter([
       {
         path: "/home/:id/league_view/:league_id",
         element: <League_View />,
-      },
-      {
-        path: "/home/:id/league_view/:league_id/draft",
-        element: <Draft />,
       },
     ],
   },

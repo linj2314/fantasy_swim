@@ -29,7 +29,11 @@ const leagueSchema = new mongoose.Schema({
     status: {
         type: Number,
     },
-    swimmers: [{ type: String }],
+    swimmers: [{
+        _id: false,
+        name: {type: String},
+        link: {type: String},
+    }],
     join: {
         type: String,
     },

@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import verify from "./Verify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Confirm_Delete_League from "./Confirm_Delete_League";
 
 export default function Leagues_Display() {
     const [leagues, setLeagues] = useState([]);
-    const navigate = useNavigate();
     const { id } = useParams();
     const [showConfirm, setShowConfirm] = useState(false);
     const [leagueId, setLeagueId] = useState("");
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const open_delete_league = () => { setShowConfirm(true); }
     const close_delete_league = () => { setShowConfirm(false); }
@@ -70,7 +71,7 @@ export default function Leagues_Display() {
         return(
             <div 
                 className="h-full rounded-lg shadow-lg flex flex-col m-4 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300"
-                onClick={() => navigate("/home/" + id + "/league_view/" + obj._id)}
+                onClick={() => navigate(`${location.pathname}/league_view/${obj._id}`)}
             >
                 <div className="rounded-t-lg bg-slate-200 border-b-2 border-slate-500 p-2 flex flex-row">
                     <div className="grow text-3xl">

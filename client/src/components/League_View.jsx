@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
 
 export default function League_View() {
     const { id, league_id } = useParams();
     const [leagueInfo, setLeagueInfo] = useState({});
     const [participants, setParticipants] = useState([]);
+    const [swimmers, setSwimmers] = useState([]);
     const [status, setStatus] = useState(-1);
+    const [draft, setDraft] = useState(false);
+    const [selectedP, setSelectedP] = useState({
+        name: "",
+        id: "",
+    });
+    const [draftSelections, setDraftSelections] = useState({});
+    const [currentlyChosen, setCurrentlyChosen] = useState([]);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         async function retrieve_info() {
@@ -28,6 +38,7 @@ export default function League_View() {
                 let result = await response.json();
                 setLeagueInfo(result);
                 setStatus(result.status);
+                setSwimmers(result.swimmers);
 
                 response = await fetch("http://localhost:5050/league/participants", {
                     method: "POST",
@@ -43,8 +54,13 @@ export default function League_View() {
                     throw new Error("Error while retrieving participants username from backend");
                 }
 
+                const ids = result.participants;
                 result = await response.json();
-                setParticipants(result);
+                const temp = result.map((name, index) => ({
+                    name: name,
+                    id: ids[index],
+                }));
+                setParticipants(temp);
             } catch(error) {
                 console.error("Error while retrieving league information while in league view", error);
             }
@@ -52,11 +68,55 @@ export default function League_View() {
         retrieve_info();
     }, []);
 
+    useEffect(() => {
+        if (participants.length > 0) {
+            setSelectedP(participants[0]);
+            const draft_selections = {};
+            for (const p of participants) {
+                draft_selections[p.id] = [];
+            }
+            setDraftSelections(draft_selections);
+        }
+    }, [participants]);
+
+    function updateSelectedP(value) {
+        setSelectedP(value);
+        setCurrentlyChosen(draftSelections[value.id]);
+    }
+
+    function make_selection(swimmer) {
+        const temp = swimmers.filter((s) => {
+            return s.link !== swimmer.link;
+        });
+        setSwimmers(temp);
+        draftSelections[selectedP.id].push(swimmer);
+        setCurrentlyChosen(draftSelections[selectedP.id]);
+    }
+
+    function remove_selection(swimmer) {
+        setSwimmers((prev) => {
+            const temp = [...prev, swimmer];
+
+            temp.sort((a, b) => a.name.localeCompare(b.name));
+
+            return temp;
+        });
+        setDraftSelections((prev) => {
+            const temp = prev;
+            temp[selectedP.id] = temp[selectedP.id].filter((s) => s.link !== swimmer.link);
+            setCurrentlyChosen(temp[selectedP.id]);
+            return temp;
+        });
+    }
+
     function Main_content() {
         if (status == 0) {
             return(
                 <div className="basis-1/2 flex flex-col justify-center items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
-                    <button className="rounded rounded-lg bg-blue-300 p-4 text-xl">
+                    <button 
+                        className="rounded rounded-lg bg-blue-300 p-4 text-xl"
+                        onClick={() => setDraft(true)}
+                    >
                         Start Draft
                     </button>
                     <span className="p-4">
@@ -87,11 +147,73 @@ export default function League_View() {
     let main_content = <Main_content />;
     let standings_content = <Standings_content />;
 
-    const participants_list = participants.map((username, index) => <div key={uuidv4()} className="text-lg p-2">{(leagueInfo.participants[index] == id) ? "👑 " + username : username}</div>);
+    const participants_list = participants.map((item, index) => <div key={uuidv4()} className="text-lg p-2">{(leagueInfo.participants[index] == id) ? "👑 " + item.name : item.name}</div>);
+    const participants_draft = participants.map((item) => 
+    <div 
+        key={uuidv4()} 
+        className={`rounded rounded-lg text-lg p-2 ${(selectedP.id == item.id) ? 'bg-blue-300' : 'bg-slate-300 hover:bg-slate-200'}`}
+        onClick={() => {updateSelectedP(item)}}
+    >
+        {item.name}
+    </div>);
+    const selected_draft = currentlyChosen.map((swimmer) => 
+    <div 
+        key={uuidv4()} 
+        className="rounded rounded-lg p-2 bg-slate-300 hover:bg-slate-200 flex flex-row justify-between w-full"
+    >
+        <h3 className="text-lg w-full">{swimmer.name}</h3>
+        <div 
+            className="text-lg rounded rounded-lg hover:bg-red-400 hover:cursor-pointer w-6 text-center"
+            onClick={() => remove_selection(swimmer)}
+        >
+            &times;
+        </div>
+    </div>);
+    const swimmers_draft = swimmers.map((swimmer) => 
+    <div 
+        key={uuidv4()} 
+        className="rounded rounded-lg text-lg p-2 bg-slate-300 hover:bg-slate-200 w-full"
+        onClick={() => make_selection(swimmer)}
+    >
+        {swimmer.name}
+    </div>);
 
     return(
         <>  
-            <div className="flex flex-col h-full w-full">
+            <div className={`flex flex-col h-full w-5/6 fixed ${(draft) ? "visible" : "invisible"}`}>
+                <div className="flex flex-row grow justify-evenly h-5/6 w-full">
+                    <div className="flex flex-col h-full w-3/12">
+                        <h3 className="text-xl font-semibold p-3">Choose a participant to draft for: </h3>
+                        <div className="border border-slate-300 h-5/6 p-2 rounded rounded-lg flex flex-col overflow-auto w-full">
+                            {participants_draft}
+                        </div>
+                    </div>
+                    <div className="flex flex-col h-full w-3/12">
+                        <h3 className="text-xl font-semibold p-3">{`${selectedP.name}\'s drafted swimmers`} </h3>
+                        <div className="border border-slate-300 h-5/6 p-2 rounded rounded-lg flex flex-col overflow-auto w-full">
+                            {selected_draft}
+                        </div>
+                    </div>
+                    <div className="flex flex-col h-full w-3/12">
+                        <h3 className="text-xl font-semibold p-3">Undrafted swimmers </h3>
+                        <div className="border border-slate-300 h-5/6 p-2 rounded rounded-lg flex flex-col overflow-auto w-full">
+                            {swimmers_draft}
+                        </div>
+                    </div>
+                </div>
+                <div className="flex flex-row justify-end p-4">
+                    <button 
+                        className="rounded rounded-lg p-4 bg-red-500 mr-4"
+                        onClick={() => setDraft(false)}    
+                    >
+                        Cancel
+                    </button>
+                    <button className="rounded rounded-lg p-4 bg-blue-300">
+                        Confirm Selections
+                    </button>
+                </div>
+            </div>
+            <div className={`flex flex-col h-full w-5/6 fixed ${(draft) ? "invisible" : "visible"}`}>
                 <div className="basis-1/12 flex items-center justify-center text-3xl font-semibold">
                     {leagueInfo.name}
                 </div>
@@ -115,7 +237,6 @@ export default function League_View() {
                     {standings_content}
                 </div>
             </div>
-            
         </>
     );
 }
