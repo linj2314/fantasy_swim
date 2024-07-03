@@ -94,9 +94,18 @@ router.post("/league", async (req, res) => {
         const leagues = [];
 
         for (const l of user.leagues) {
-            const league = await League.findById(l);
+            let league;
+            try {
+                league = await League.findById(l);
+            } catch {
+                user.leagues = user.leagues.filter((league_id) => league_id !== l);
+                continue;
+            }
+            
             leagues.push(league);
         }
+
+        await user.save();
 
         res.status(200).json(leagues);
     } catch(error) {

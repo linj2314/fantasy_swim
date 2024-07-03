@@ -1,5 +1,5 @@
 const uri = process.env.URI || "";
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
@@ -41,6 +41,21 @@ const leagueSchema = new mongoose.Schema({
     creator: {
         type: String,
     },
+    draft_selections: {
+        type: Map,
+        of: [{
+            _id: false,
+            name: {type: String},
+            link: {type: String},
+        }],
+    },
+    weekly_results: {
+        type: Map,
+        of: {
+            type: Map,
+            of: {type: String},
+        }
+    }
 });
 
 const League = mongoose.model("League", leagueSchema);

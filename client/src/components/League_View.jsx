@@ -15,6 +15,7 @@ export default function League_View() {
     });
     const [draftSelections, setDraftSelections] = useState({});
     const [currentlyChosen, setCurrentlyChosen] = useState([]);
+    const [swimmerLookup, setSwimmerLookup] = useState({});
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -79,6 +80,19 @@ export default function League_View() {
         }
     }, [participants]);
 
+    useEffect(() => {
+        if (leagueInfo.status == 1) {
+            const temp = {};
+            for (const [user, drafted] of Object.entries(leagueInfo.draft_selections)) {
+                for (const d of drafted) {
+                    const swimmer_id = d.link.match(/\d+/g).join('');
+                    temp[swimmer_id] = d.name; 
+                }
+            }
+            setSwimmerLookup(temp);
+        }
+    }, [leagueInfo])
+ 
     function updateSelectedP(value) {
         setSelectedP(value);
         setCurrentlyChosen(draftSelections[value.id]);
@@ -109,23 +123,83 @@ export default function League_View() {
         });
     }
 
+    function Event({event, times}) {
+        const times_list = [];
+        for (const [swimmer, time] of Object.entries(leagueInfo.weekly_results[event])) {
+            let drafted_by_you = false;
+            for (const s of leagueInfo.draft_selections[id]) {
+                if (s.link === "https://www.swimcloud.com/swimmer/" + swimmer) {
+                    drafted_by_you = true;
+                    break;
+                }
+            }
+            times_list.push(<div key={uuidv4()} className={`flex flex-row justify-between p-2 rounded rounded-lg ${(drafted_by_you) ? "bg-blue-300 hover:bg-blue-200": "hover:bg-slate-200"}`}>
+                <div className="text-lg">
+                    {swimmerLookup[swimmer]}
+                </div>
+                <div className="text-lg">
+                    {time}
+                </div>
+            </div>)
+        }
+        return(
+            <div className="flex flex-col p-4 border border-slate-300">
+                <div className="rounded rounded-lg text-2xl font-semibold p-4">
+                    {event}
+                </div>
+                {times_list}
+            </div>
+        )
+    }
+
+    const weekly_results = [];
+    if (leagueInfo.weekly_results) {
+        for (const [event, times] of Object.entries(leagueInfo.weekly_results)) {
+            weekly_results.push(<Event key={uuidv4()} event={event} times={times}></Event>)
+        }
+    }
+
     function Main_content() {
         if (status == 0) {
             return(
                 <div className="basis-1/2 flex flex-col justify-center items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
-                    <button 
+                    {(id == leagueInfo.creator) && <button 
                         className="rounded rounded-lg bg-blue-300 p-4 text-xl"
                         onClick={() => setDraft(true)}
                     >
                         Start Draft
-                    </button>
+                    </button>}
+                    {(id != leagueInfo.creator) && 
+                    <>
+                        <button className="rounded rounded-lg bg-slate-300 p-4 text-xl">
+                            Start Draft
+                        </button>
+                        <span className="p-4">
+                            Only league creator can start draft!
+                        </span>
+                    </>
+                    }
+                    
                     <span className="p-4">
                         Participants will not be able to join or leave after drafting
                     </span>
                 </div>
             );
-        } else if (status == 1) {
-            
+        }
+        if (status == 1) {
+            return(
+                <div className="basis-1/2 flex flex-col w-full h-11/12 items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
+                    <h3 className="pt-4 text-2xl font-semibold">
+                        Weekly Meet Results
+                    </h3>
+                    <span className="p-2 pb-0">
+                        Swimmers/divers in your league are displayed in blue
+                    </span>
+                    <div className="flex flex-col rounded rounded-lg h-full w-11/12 m-4 grow border border-slate-300 overflow-auto">
+                        {weekly_results}
+                    </div>
+                </div>
+            );
         }
     }
 
@@ -142,12 +216,72 @@ export default function League_View() {
                 </div>
             )
         }
+        if (status == 1) {
+            return(
+                <div className="basis-3/12 flex flex-col rounded rounded-lg border border-slate-300 m-4 justify-start">
+                    <div className="basis-6/12 text-xl font-semibold text-center p-4">
+                        Standings
+                    </div>
+                    <div className="flex justify-center">
+                        Need to make standings here
+                    </div>
+                </div>
+            )
+        }
+    }
+
+    async function submitDraft() {
+        console.log(draftSelections);
+        try {
+            const response = await fetch("http://localhost:5050/league/draft", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    league_id: league_id,
+                    draft_selections: draftSelections,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Error while attempting to store draft results");
+            }
+        } catch(error) {
+            console.error(error);
+        } finally {
+            setDraft(false);
+            setDraftSelections({});
+            setCurrentlyChosen([]);
+            setSelectedP({});
+            try {
+                let response = await fetch("http://localhost:5050/league/info", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        league_id: league_id,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error while retrieving league info from backend");
+                }
+
+                let result = await response.json();
+                setLeagueInfo(result);
+                setStatus(result.status);
+            } catch(error) {
+                console.error("Error while updating league information after draft completion", error);
+            }
+        }
     }
 
     let main_content = <Main_content />;
     let standings_content = <Standings_content />;
 
-    const participants_list = participants.map((item, index) => <div key={uuidv4()} className="text-lg p-2">{(leagueInfo.participants[index] == id) ? "👑 " + item.name : item.name}</div>);
+    const participants_list = participants.map((item, index) => <div key={uuidv4()} className="rounded rounded-lg text-lg p-2 hover:bg-slate-200 w-full text-center">{(leagueInfo.participants[index] == leagueInfo.creator) ? "👑 " + item.name : item.name}</div>);
     const participants_draft = participants.map((item) => 
     <div 
         key={uuidv4()} 
@@ -203,12 +337,15 @@ export default function League_View() {
                 </div>
                 <div className="flex flex-row justify-end p-4">
                     <button 
-                        className="rounded rounded-lg p-4 bg-red-500 mr-4"
+                        className="rounded rounded-lg p-4 bg-red-500 mr-4 hover:cursor-pointer"
                         onClick={() => setDraft(false)}    
                     >
                         Cancel
                     </button>
-                    <button className="rounded rounded-lg p-4 bg-blue-300">
+                    <button 
+                        className="rounded rounded-lg p-4 bg-blue-300 hover:cursor-pointer"
+                        onClick={submitDraft}
+                    >
                         Confirm Selections
                     </button>
                 </div>

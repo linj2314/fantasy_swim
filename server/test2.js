@@ -6,6 +6,8 @@ options.addArguments('--headless=new');
 options.addArguments("--window-size=1920,1080");
 options.addArguments("--start-maximized");
 
+
+
 ;(async function example() {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {

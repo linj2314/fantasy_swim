@@ -3,6 +3,7 @@ import { User, League } from "../db/schema.js";
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
 import {Options} from "selenium-webdriver/chrome.js";
 import crypto from "crypto";
+import { MongoDriverError } from "mongodb";
 const options = new Options();
 options.addArguments('--remote-debugging-pipe');
 options.addArguments('--headless=new');
@@ -160,6 +161,8 @@ router.post('/participants', async (req, res) => {
     }
 });
 
+
+//for deleting a league
 router.delete('/delete', async (req, res) => {
     try {
         const league = await League.findById(req.body.league_id);
@@ -197,5 +200,117 @@ router.delete('/delete', async (req, res) => {
         res.status(500).json({error: "Error while deleting/removing league"});
     }
 });
+
+//update draft results
+router.patch('/draft', async (req, res) => {
+    try {
+        const league = await League.findById(req.body.league_id);
+
+        league.draft_selections = req.body.draft_selections;
+        league.status = 1;
+        league.swimmers = [];
+        league.weekly_results = new Map();
+
+        await league.save();
+
+        res.status(204).send("Draft results successfully updated");
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({error: "Error while updating draft results"});
+    }
+});
+
+//update weekly results; only run this once a day 
+router.post('/update_results', async (req, res) => {
+    let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
+    try {
+        const league = await League.findById(req.body.league_id);
+        for (const [_, swimmers] of league.draft_selections) {
+            for (const s of swimmers) {
+                await driver.get(s.link);
+                const swimmer_id = s.link.match(/\d+/g).join('');
+
+                const date_text = await driver.findElement(By.css(".u-text-normal")).getText();
+                const date_arr = date_text.split(' ');
+                const tmp = date_arr[1].split('\u{2013}');
+                date_arr[1] = tmp[tmp.length - 1];
+                const date = date_arr.join(" ");
+
+                const day = 60 * 60 * 24 * 1000;
+                const date_obj = new Date(date);
+                const next_date = new Date(date_obj.getTime() + day);
+                const today = new Date();
+                
+                /*
+                if (today.toDateString() !== next_date.toDateString()) {
+                    continue;
+                }
+                */
+
+                const tb = await driver.findElement(By.css(".table"));
+                const rows = await tb.findElements(By.css("tbody tr"));
+                for (const r of rows) {
+                    const cells = (await r.findElements(By.css("td"))).slice(0, 2);
+                    const event_text = await cells[0].getText();
+                    const mini_text = await cells[0].findElement(By.css("span")).getText();
+                    if (mini_text == "Relay Split") {
+                        continue;
+                    }
+                    const event = event_text.replace(mini_text, "").trim();
+                    const time = await cells[1].getText();
+                    if (league.weekly_results.has(event)) {
+                        let swims = league.weekly_results.get(event);
+                        if (swims.has(swimmer_id)) {
+                            if (swims.get(swimmer_id) > time) {
+                                swims.set(swimmer_id, time);
+                            }
+                        } else {
+                            swims.set(swimmer_id, time);
+                        }
+                        const temp_array = Array.from(swims);
+                        temp_array.sort((a, b) => a[1] - b[1]);
+                        swims = new Map(temp_array);
+                        league.weekly_results.set(event, swims);
+                    } else {
+                        const swims = new Map();
+                        swims.set(swimmer_id, time);
+                        league.weekly_results.set(event, swims);
+                    }
+                }
+            }
+        }
+
+        league.weekly_results = new Map([...league.weekly_results.entries()].sort((a, b) => b[0] - a[0]));
+        await league.save({ checkKeys: false});
+
+        res.status(204).send("Weekly results successfully updated");
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({error: "Error while updating weekly results"});
+    } finally {
+        driver.quit();
+    }
+});
+
+router.post('/test', async (req, res) => {
+    try {
+        const league = await League.findById(req.body.league_id);
+        
+        league.weekly_results.set("50 Y Free", {
+            test: '25',
+            test2: '20',
+            test3: '35',
+        });
+
+        await league.save();
+
+        console.log("done");
+
+        res.status(204).send();
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({error: "Error while testing"});
+    }
+})
 
 export default router;
