@@ -6,7 +6,7 @@ import verify from "./Verify";
 
 export default function Create_League({show, close}) {
     const [name, setName] = useState("");
-    const [dur, setDur] = useState("");
+    const [dur, setDur] = useState("10");
     const [query, setQuery] = useState("");
     const [list, setList] = useState([]);
     const [addedList, setAddedList] = useState([]);
@@ -40,25 +40,27 @@ export default function Create_League({show, close}) {
         get_response();
     }, [query]);
 
-    /*
-    async function verify() {
-        const response = await fetch("http://localhost:5050/user/home", {
-            method: "GET",
-            headers: {
-                "Authorization": localStorage.getItem("token"),
-            },
-        });
-
-        if (!response.ok) {
-            navigate("/");
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
         }
+    };
 
-        const result = await response.json();
-        id = result.userId;
+    const enterDur = (event) => {
+        if (!event.target.value) {
+            setDur("");
+            return;
+        }
+        if (event.target.value < 1) {
+            setDur(1);
+            return;
+        }
+        if (event.target.value > 20) {
+            setDur(20);
+            return;
+        }
+        setDur(event.target.value);
     }
-
-    verify();
-    */
 
     function reset_fields() {
         setName("");
@@ -241,16 +243,19 @@ export default function Create_League({show, close}) {
                                     type="text"
                                     className="rounded-lg border border-black w-64"
                                     onChange={(e)=>{setName(e.target.value)}}
+                                    onKeyDown={handleKeyPress}
                                 />
                             </div>
                             <div className="flex flex-row p-4 justify-between">
                                 <h3 className="text-lg">
-                                    Duration of League (days)
+                                    Duration of League (Weeks)
                                 </h3>
                                 <input 
+                                    value={dur}
                                     type="number"
                                     className="rounded-lg border border-black w-12"
-                                    onChange={(e)=>{setDur(e.target.value)}}
+                                    onChange={enterDur}
+                                    onKeyDown={handleKeyPress}
                                 />
                             </div>
                             <div className="p-4 flex flex-col justify-center items-center rounded-lg w-full">

@@ -10,6 +10,7 @@ const base_times = {
     "100 Y Breast": 49.53,
     "200 Y Breast": 107.91,
     "100 Y Fly": 42.80,
+    "100 Y IM": 46.33,
     "200 Y Fly": 97.35,
     "200 Y IM": 97.91,
     "400 Y IM": 213.42,
@@ -47,5 +48,3 @@ export default function score(event, time) {
         return(Math.round(100000 * (base_times[event] / seconds) ** 3) / 100);
     }
 }
-
-console.log(score("50 Y Free", "20.50"));

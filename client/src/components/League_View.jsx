@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
+import score from "./Score.js";
 
 export default function League_View() {
     const { id, league_id } = useParams();
@@ -140,6 +141,9 @@ export default function League_View() {
                 <div className="text-lg">
                     {time}
                 </div>
+                <div className="text-lg">
+                    {score(event, time)}
+                </div>
             </div>)
         }
         return(
@@ -231,7 +235,6 @@ export default function League_View() {
     }
 
     async function submitDraft() {
-        console.log(draftSelections);
         try {
             const response = await fetch("http://localhost:5050/league/draft", {
                 method: "PATCH",
@@ -312,6 +315,22 @@ export default function League_View() {
         {swimmer.name}
     </div>);
 
+    async function updateFunc() {
+        try {
+            const response = await fetch("http://localhost:5050/league/update_results", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    league_id: league_id,
+                }),
+            })
+        } catch(error) {
+            console.error("Error while updating weekly results", error);
+        }
+    }
+
     return(
         <>  
             <div className={`flex flex-col h-full w-5/6 fixed ${(draft) ? "visible" : "invisible"}`}>
@@ -368,6 +387,9 @@ export default function League_View() {
                             <div className="flex text-xl font-semibold p-4 justify-center">
                                 Settings
                             </div>
+                            <button onClick={updateFunc}>
+                                Update
+                            </button>
                         </div>
                     </div>
                     {main_content}

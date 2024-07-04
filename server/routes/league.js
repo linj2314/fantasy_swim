@@ -225,6 +225,7 @@ router.post('/update_results', async (req, res) => {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
         const league = await League.findById(req.body.league_id);
+        league.weekly_results.clear();
         for (const [_, swimmers] of league.draft_selections) {
             for (const s of swimmers) {
                 await driver.get(s.link);
@@ -253,7 +254,7 @@ router.post('/update_results', async (req, res) => {
                     const cells = (await r.findElements(By.css("td"))).slice(0, 2);
                     const event_text = await cells[0].getText();
                     const mini_text = await cells[0].findElement(By.css("span")).getText();
-                    if (mini_text == "Relay Split") {
+                    if (mini_text == "Relay Split" || mini_text == "Extracted") {
                         continue;
                     }
                     const event = event_text.replace(mini_text, "").trim();
@@ -269,8 +270,8 @@ router.post('/update_results', async (req, res) => {
                         }
                         const temp_array = Array.from(swims);
                         temp_array.sort((a, b) => a[1] - b[1]);
-                        swims = new Map(temp_array);
-                        league.weekly_results.set(event, swims);
+                        const sorted_swims = new Map(temp_array);
+                        league.weekly_results.set(event, sorted_swims);
                     } else {
                         const swims = new Map();
                         swims.set(swimmer_id, time);
