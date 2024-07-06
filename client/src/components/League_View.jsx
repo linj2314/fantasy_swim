@@ -17,6 +17,7 @@ export default function League_View() {
     const [draftSelections, setDraftSelections] = useState({});
     const [currentlyChosen, setCurrentlyChosen] = useState([]);
     const [swimmerLookup, setSwimmerLookup] = useState({});
+    const [tempPoints, setTempPoints] = useState({});
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -82,7 +83,7 @@ export default function League_View() {
     }, [participants]);
 
     useEffect(() => {
-        if (leagueInfo.status == 1) {
+        if (status == 2) {
             const temp = {};
             for (const [user, drafted] of Object.entries(leagueInfo.draft_selections)) {
                 for (const d of drafted) {
@@ -91,6 +92,21 @@ export default function League_View() {
                 }
             }
             setSwimmerLookup(temp);
+            if (leagueInfo.weekly_results) {
+                const temp = {};
+                for (const [user, swimmers] of Object.entries(leagueInfo.draft_selections)) {
+                    temp[user] = 0;
+                    for (const s of swimmers) {
+                        const swimmer_id = s.link.match(/\d+/g).join('');
+                        for (const [event, results] of Object.entries(leagueInfo.weekly_results)) {
+                            if (results[swimmer_id]) {
+                                temp[user] += score(event, results[swimmer_id]);
+                            }
+                        }
+                    }
+                }
+                setTempPoints(temp);
+            }
         }
     }, [leagueInfo])
  
@@ -134,22 +150,33 @@ export default function League_View() {
                     break;
                 }
             }
-            times_list.push(<div key={uuidv4()} className={`flex flex-row justify-between p-2 rounded rounded-lg ${(drafted_by_you) ? "bg-blue-300 hover:bg-blue-200": "hover:bg-slate-200"}`}>
-                <div className="text-lg">
+            times_list.push(<div key={uuidv4()} className={`flex flex-row w-full p-2 rounded rounded-lg ${(drafted_by_you) ? "bg-blue-300 hover:bg-blue-200": "hover:bg-slate-200"}`}>
+                <div className="text-lg w-1/3">
                     {swimmerLookup[swimmer]}
                 </div>
-                <div className="text-lg">
+                <div className="text-lg w-1/3 text-center">
                     {time}
                 </div>
-                <div className="text-lg">
-                    {score(event, time)}
+                <div className="text-lg w-1/3 text-end">
+                    {score(event, time) == -1 ? "Cannot be scored" : score(event, time)}
                 </div>
             </div>)
         }
         return(
             <div className="flex flex-col p-4 border border-slate-300">
-                <div className="rounded rounded-lg text-2xl font-semibold p-4">
+                <div className="rounded rounded-lg text-2xl font-semibold p-4 pb-2">
                     {event}
+                </div>
+                <div className="flex flex-row rounded rounded-lg text-xl font-semibold w-full p-2">
+                    <div className="w-1/3">
+                        Name
+                    </div>
+                    <div className="w-1/3 text-center">
+                        Time
+                    </div>
+                    <div className="w-1/3 text-end">
+                        Points
+                    </div>
                 </div>
                 {times_list}
             </div>
@@ -159,7 +186,7 @@ export default function League_View() {
     const weekly_results = [];
     if (leagueInfo.weekly_results) {
         for (const [event, times] of Object.entries(leagueInfo.weekly_results)) {
-            weekly_results.push(<Event key={uuidv4()} event={event} times={times}></Event>)
+            weekly_results.push(<Event key={uuidv4()} event={event} times={times}></Event>);
         }
     }
 
@@ -192,6 +219,15 @@ export default function League_View() {
         }
         if (status == 1) {
             return(
+                <div className="basis-1/2 flex flex-col justify-center items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
+                    <span className="p-4 text-lg">
+                        League will begin around the start of the next day (12:00 AM)!
+                    </span>
+                </div>
+            );
+        }
+        if (status == 2) {
+            return(
                 <div className="basis-1/2 flex flex-col w-full h-11/12 items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
                     <h3 className="pt-4 text-2xl font-semibold">
                         Weekly Meet Results
@@ -204,6 +240,46 @@ export default function League_View() {
                     </div>
                 </div>
             );
+        }
+    }
+
+    function Standing({placing, user, points, temp_points}) {
+        let bg_color = "";
+        if (placing == 1) {
+            bg_color = "bg-[#FFD700]";
+        } else if (placing == 2) {
+            bg_color = "bg-[#C0C0C0]"
+        } else if (placing == 3) {
+            bg_color = "bg-[#CD7F32]"
+        }
+        return(
+            <div className={"border border-slate-300 p-4 mx-2 rounded rounded-lg flex flex-row justify-between " + bg_color}>
+                <div className="text-xl font-semibold w-1/3">
+                    {placing + ". " +  user}
+                </div>
+                <div className="text-xl font-semibold w-1/3 text-center">
+                    {points}
+                </div>
+                <div className="text-xl font-semibold w-1/3 text-end">
+                    {"+ " + Math.round(temp_points * 100) / 100}
+                </div>
+            </div>
+        )
+    }
+
+    const standings_results = [];
+    if (leagueInfo.points) {
+        let index = 1;
+        for (const [user, points] of Object.entries(leagueInfo.points)) {
+            let name;
+            for (const p of participants) {
+                if (p.id == user) {
+                    name = p.name;
+                    break;
+                }
+            }
+            standings_results.push(<Standing key={uuidv4()} placing={index} user={name} points={points} temp_points={tempPoints[user]}></Standing>);
+            index++;
         }
     }
 
@@ -227,7 +303,30 @@ export default function League_View() {
                         Standings
                     </div>
                     <div className="flex justify-center">
-                        Need to make standings here
+                        N/A
+                    </div>
+                </div>
+            )
+        }
+        if (status == 2) {
+            return(
+                <div className="basis-3/12 flex flex-col rounded rounded-lg border border-slate-300 m-4 justify-start">
+                    <div className="text-xl font-semibold text-center p-4">
+                        Standings
+                    </div>
+                    <div className="flex flex-row p-4">
+                        <div className="text-xl font-semibold w-1/3">
+                            Name
+                        </div>
+                        <div className="text-xl font-semibold w-1/3 text-center">
+                            Points
+                        </div>
+                        <div className="text-xl font-semibold w-1/3 text-end">
+                            Tentative
+                        </div>
+                    </div>
+                    <div className="flex flex-col">
+                        {standings_results}
                     </div>
                 </div>
             )
@@ -325,7 +424,13 @@ export default function League_View() {
                 body: JSON.stringify({
                     league_id: league_id,
                 }),
-            })
+            });
+
+            if (!response.ok) {
+                throw new Error("server side error while updating weekly results");
+            } else {
+                window.location.reload();
+            }
         } catch(error) {
             console.error("Error while updating weekly results", error);
         }

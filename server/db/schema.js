@@ -55,6 +55,13 @@ const leagueSchema = new mongoose.Schema({
             type: Map,
             of: {type: String},
         }
+    },
+    points: {
+        type: Map,
+        of: {type: Number},
+    },
+    start_date: {
+        type: Date,
     }
 });
 

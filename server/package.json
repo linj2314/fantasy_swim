@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.7.0",
     "mongoose": "^8.4.1",
+    "node-cron": "^3.0.3",
     "selenium": "^2.20.0",
     "selenium-webdriver": "^4.22.0",
     "webdriver": "^8.39.0"

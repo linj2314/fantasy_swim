@@ -161,7 +161,6 @@ router.post('/participants', async (req, res) => {
     }
 });
 
-
 //for deleting a league
 router.delete('/delete', async (req, res) => {
     try {
@@ -207,9 +206,14 @@ router.patch('/draft', async (req, res) => {
         const league = await League.findById(req.body.league_id);
 
         league.draft_selections = req.body.draft_selections;
-        league.status = 1;
+        league.status = 1; //temp status to indicate between drafting and league starting; do this because always want league to start at 12:00AM
         league.swimmers = [];
         league.weekly_results = new Map();
+        const tmp = {};
+        for (const p of league.participants) {
+            tmp[p] = 0;
+        }
+        league.points = tmp;
 
         await league.save();
 
@@ -220,7 +224,7 @@ router.patch('/draft', async (req, res) => {
     }
 });
 
-//update weekly results; only run this once a day 
+//update weekly results; only run this once a day (REMOVE THIS LATER)
 router.post('/update_results', async (req, res) => {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
@@ -254,7 +258,7 @@ router.post('/update_results', async (req, res) => {
                     const cells = (await r.findElements(By.css("td"))).slice(0, 2);
                     const event_text = await cells[0].getText();
                     const mini_text = await cells[0].findElement(By.css("span")).getText();
-                    if (mini_text == "Relay Split" || mini_text == "Extracted") {
+                    if (mini_text == "Relay Split" || mini_text == "Extracted" || mini_text == "Relay Leadoff") {
                         continue;
                     }
                     const event = event_text.replace(mini_text, "").trim();
