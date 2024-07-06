@@ -241,6 +241,15 @@ export default function League_View() {
                 </div>
             );
         }
+        if (status == 3) {
+            return(
+                <div className="basis-1/2 flex flex-col justify-center items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
+                    <span className="p-4 text-lg">
+                        This league has concluded and will be auto-deleted 3 days after its conclusion!
+                    </span>
+                </div>
+            );
+        }
     }
 
     function Standing({placing, user, points, temp_points}) {
@@ -308,7 +317,7 @@ export default function League_View() {
                 </div>
             )
         }
-        if (status == 2) {
+        if (status == 2 || status == 3) {
             return(
                 <div className="basis-3/12 flex flex-col rounded rounded-lg border border-slate-300 m-4 justify-start">
                     <div className="text-xl font-semibold text-center p-4">

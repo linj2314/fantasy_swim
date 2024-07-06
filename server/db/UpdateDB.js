@@ -1,21 +1,36 @@
 import { League } from "./schema.js";
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
+import score from "../Score.js";
 
 export default async function UpdateDB() {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
-        const leagues = await League.find({status: { $in: [1, 2] } });
+        const leagues = await League.find({status: { $in: [1, 2, 3] } });
         for (const league in leagues) {
             if (league.status == 1) {
                 const date = new Date();
                 date.setHours(0, 0, 0, 0);
                 league.start_date = date;
-            } else {
+            } else if (league.status == 2) {
                 let date = new Date();
                 date.setHours(0, 0, 0, 0);
                 //check if week is done
                 if (((date - league.start_date) / (60 * 60 * 24 * 1000)) % 7 === 0) {
-                    //write code here to calculate tentative points and add to actual points
+                    temp_points = {};
+                    for (const [user, swimmers] of Object.entries(league.draft_selections)) {
+                        temp_points[user] = 0;
+                        for (const s of swimmers) {
+                            const swimmer_id = s.link.match(/\d+/g).join('');
+                            for (const [event, results] of Object.entries(league.weekly_results)) {
+                                if (results[swimmer_id]) {
+                                    temp_points[user] += score(event, results[swimmer_id]);
+                                }
+                            }
+                        }
+                    }
+                    for (const [user, points] of Object.entries(temp_points)) {
+                        league.points[user] += points;
+                    }
                     league.weekly_results.clear();
                 }
 
@@ -23,7 +38,14 @@ export default async function UpdateDB() {
                 if (((date - league.start_date) / (60 * 60 * 24 * 1000)) / 7 === league.duration) {
                     league.status = 3;
                     await league.save();
-                    return;
+                    continue;
+                }
+            } else if (league.status == 3) {
+                let date = new Date();
+                date.setHours(0, 0, 0, 0);
+                if (((date - league.start_date) / (60 * 60 * 24 * 1000)) === league.duration * 7 + 3) {
+                    await league.deleteOne();
+                    continue;
                 }
             }
             for (const [_, swimmers] of league.draft_selections) {
