@@ -1,6 +1,13 @@
 import { League } from "./schema.js";
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
+import {Options} from "selenium-webdriver/chrome.js";
 import score from "../Score.js";
+
+const options = new Options();
+options.addArguments('--remote-debugging-pipe');
+options.addArguments('--headless=new');
+options.addArguments("--window-size=1920,1080");
+options.addArguments("--start-maximized");
 
 export default async function UpdateDB() {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();

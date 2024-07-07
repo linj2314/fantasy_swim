@@ -8,6 +8,7 @@ export default function Create_Account() {
 		username: "",
         password: "",
     });
+    const [createAccountError, setCreateAccountError] = useState("");
     const navigate = useNavigate();
 
 	function updateForm(value) {
@@ -28,71 +29,87 @@ export default function Create_Account() {
 				body: JSON.stringify(user),
 			});
 
+            if (response.status === 409) {
+                const result = await response.json();
+                if (result.error === "email") {
+                    setCreateAccountError("Email is already registered");
+                } else {
+                    setCreateAccountError("Username is already in use");
+                }
+                return;
+            }
+
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
+
+            setForm({ email: "", username: "", password: ""});
+			navigate("/")
 		} catch(error) {
 			console.error('A problem occurred adding or updating a record: ', error);
-		} finally {
-			setForm({ email: "", username: "", password: ""});
-			navigate("/")
 		}
     }
 
     return(
         <>
-            <div className="flex flex-col items-center justify-center h-screen">
-            <h3 className="text-lg font-semibold p-4">Create New Account</h3>
-            <form
-                onSubmit={onSubmit}
-            >
-                <div>
-                <label htmlFor="email">
-                    Email
-                </label>
-                </div>
-                <div className="pb-5">
-                <input 
-					type="text" 
-					id="email" 
-					className="rounded-md border-2"
-					onChange={(e) => {updateForm({email: e.target.value})}}
-				/>
-                </div>
-                <div>
-                <label htmlFor="user">
-                    Username
-                </label>
-                </div>
-                <div className="pb-5">
-                <input 
-					type="text" 
-					id="user" 
-					className="rounded-md border-2"
-					onChange={(e) => {updateForm({username: e.target.value})}}
-				/>
-                </div>
-                <div>
-                <label htmlFor="pass">
-                    Password
-                </label>
-                </div>
-                <div className="pb-5">
-                <input 
-                    type="text" 
-                    id="pass" 
-                    className="rounded-md border-2"
-                    onChange={(e) => {updateForm({password: e.target.value})}}
-                />
-                </div>
-                <div className="flex justify-center">
-                <input 
-                    type="submit"
-                    value="Create New Account"
-                    className="inline-flex items-center justify-center whitespace-nowrap text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-slate-100 h-9 rounded-md px-3"
-                />
-                </div>
-            </form>
+            <div className="flex flex-col items-center justify-center h-screen w-screen">
+                <h3 className="text-lg font-semibold p-4">Create New Account</h3>
+                <form
+                    onSubmit={onSubmit}
+                    className="flex flex-col items-center justify-center w-48"
+                >
+                    <div className="w-full">
+                        <label htmlFor="email" className="flex justify-start w-full p-2">
+                            Email
+                        </label>
+                    </div>
+                    <div className="pb-5">
+                        <input 
+                            type="text" 
+                            id="email" 
+                            className="rounded-md border-2"
+                            onChange={(e) => {updateForm({email: e.target.value})}}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <label htmlFor="user" className="flex justify-start w-full p-2">
+                            Username
+                        </label>
+                    </div>
+                    <div className="pb-5">
+                        <input 
+                            type="text" 
+                            id="user" 
+                            className="rounded-md border-2"
+                            onChange={(e) => {updateForm({username: e.target.value})}}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <label htmlFor="pass" className="flex justify-start w-full p-2">
+                            Password
+                        </label>
+                    </div>
+                    <div className="pb-5">
+                        <input 
+                            type="text" 
+                            id="pass" 
+                            className="rounded-md border-2"
+                            onChange={(e) => {updateForm({password: e.target.value})}}
+                        />
+                    </div>
+                    <div className={`h-1/12 flex justify-center items-center ${(!createAccountError) ? "invisible" : "visible"}`}>
+                        <span className="bg-red-600 text-white p-2 rounded rounded-lg">
+                            {createAccountError}
+                        </span>
+                    </div>
+                    <div className="flex justify-center p-4">
+                        <input 
+                            type="submit"
+                            value="Create New Account"
+                            className="p-2 border rounded rounded-lg hover:bg-slate-100 text-lg font-semibold"
+                        />
+                    </div>
+                </form>
             </div>
         </>
     );

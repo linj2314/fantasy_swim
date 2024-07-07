@@ -1,6 +1,5 @@
 const uri = process.env.URI || "";
 import mongoose, { Schema } from "mongoose";
-import bcrypt from "bcrypt";
 
 const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
 

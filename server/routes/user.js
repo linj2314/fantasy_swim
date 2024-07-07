@@ -17,7 +17,18 @@ router.post("/", async (req, res) => {
         });
         await user.save();
         res.status(204).send();
-    } catch (err) {
+    } catch (err) { 
+        if (err.name === "MongoServerError" && err.code == 11000) {
+            if (err.keyPattern["email"] == 1) {
+                return res.status(409).json({
+                    error: "email"
+                })
+            } else {
+                return res.status(409).json({
+                    error: "username"
+                })
+            }
+        }
         console.error(err);
         res.status(500).send("Error creating account");
     }
