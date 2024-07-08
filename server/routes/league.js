@@ -35,9 +35,10 @@ router.get('/api/search/:q', async (req, res) => {
 
 //for retrieving roster of a team
 router.get('/roster/:teamId', async (req, res) => {
+    const team_id = req.params.teamId;
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
-        await driver.get('https://www.swimcloud.com/team/3951/roster/');
+        await driver.get('https://www.swimcloud.com/team/' + team_id + '/roster/');
         const ret = [];
         const swimmers = await driver.findElements(By.css('.c-table-clean tbody tr'));
         for (const s of swimmers) {
@@ -60,6 +61,9 @@ router.get('/roster/:teamId', async (req, res) => {
                 name: await name.getText(),
                 hometown: await hometown.getText(),
             });
+            if (ret.length == 250) {
+                break;
+            }
         }
         res.status(200).json(ret);
     } catch(error) {
@@ -110,7 +114,7 @@ router.post('/participant', async (req, res) => {
         const league = await League.findOne({join: req.body.join});
 
         if (!league) {
-            return res.status(404).json({error: "league not found"});
+            return res.status(404).json({error: "league_not_found"});
         }
 
         league.participants.push(req.body.id);

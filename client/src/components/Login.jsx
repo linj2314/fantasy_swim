@@ -77,7 +77,6 @@ export default function Login() {
                             id="pass" 
                             className="rounded-md border-2 w-full"
                             onChange={(e) => {updateForm({password: e.target.value})}}
-                            maxLength="30"
                         />
                     </div>
                     <div className={`h-1/12 flex justify-center items-center ${(!loginError) ? "invisible" : "visible"}`}>

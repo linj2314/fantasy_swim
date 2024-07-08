@@ -3,29 +3,63 @@ import { User, League } from "../db/schema.js";
 import auth from "../middleware/auth.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import passwordValidator from "password-validator";
 const router = express.Router();
 const secretKey = process.env.JWT_SECRET;
 const expireTime = process.env.JWT_EXPIRE;
 
 router.post("/", async (req, res) => {
     try {
+        if (!req.body.username || !req.body.email || !req.body.password) {
+            return res.status(400).json({
+                error: "missing_field",
+            })
+        }
+
+        const schema = new passwordValidator();
+
+        schema
+        .is().min(12)                                    
+        .is().max(100)                                  
+        .has().uppercase()                             
+        .has().lowercase()
+        .has().symbols()                               
+        .has().digits()                                
+        .has().not().spaces();                           
+
+        if (!schema.validate(req.body.password)) {
+            return res.status(400).json({
+                error: "password",
+            })
+        }
+
         const pass = await bcrypt.hash(req.body.password, 8);
+
+        const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+        if (!emailRegex.test(req.body.email)) {
+            return res.status(400).json({
+                error: "invalid_email",
+            })
+        }
+
         const user = new User({
             username: req.body.username,
             email: req.body.email,
             password: pass,
         });
+
         await user.save();
         res.status(204).send();
     } catch (err) { 
         if (err.name === "MongoServerError" && err.code == 11000) {
             if (err.keyPattern["email"] == 1) {
                 return res.status(409).json({
-                    error: "email"
+                    error: "duplicate_email",
                 })
             } else {
                 return res.status(409).json({
-                    error: "username"
+                    error: "username",
                 })
             }
         }

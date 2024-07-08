@@ -11,6 +11,7 @@ export default function Create_League({show, close}) {
     const [list, setList] = useState([]);
     const [addedList, setAddedList] = useState([]);
     const [showLoading, setShowLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -64,7 +65,7 @@ export default function Create_League({show, close}) {
 
     function reset_fields() {
         setName("");
-        setDur("");
+        setDur("10");
         setList([]);
         setAddedList([]);
         setQuery("");
@@ -78,6 +79,22 @@ export default function Create_League({show, close}) {
     async function onSubmit(e) {
         e.preventDefault();
         let id = await verify();
+
+        if (!name) {
+            setErrorMessage("Enter a league name");
+            return;
+        }
+
+        if (addedList.length < 10) {
+            setErrorMessage("Add at least 10 swimmers");
+            return;
+        }
+
+        if (addedList.length > 200) {
+            setErrorMessage("Max swimmers allowed is 200");
+            return;
+        }
+
         try {
             const response = await fetch("http://localhost:5050/league", {
                 method: "POST",
@@ -220,8 +237,8 @@ export default function Create_League({show, close}) {
             <div className="h-screen w-screen fixed opacity-25 bg-gray-800 flex items-center justify-center"></div>
             <div className="flex h-screen w-screen justify-center items-center fixed">
                 <div className="bg-slate-100 p-10 shadow-lg h-screen w-1/3 flex flex-col">
-                    <form onSubmit={onSubmit} className="flex flex-col grow">
-                        <div className="flex flex-col grow">
+                    <form onSubmit={onSubmit} className="flex flex-col h-full">
+                        <div className="flex flex-col h-full">
                             <div className="flex justify-between border-b-2 border-slate-500 p-4">
                                 <h3 className="text-3xl font-semibold pr-48">
                                     Create League
@@ -244,6 +261,7 @@ export default function Create_League({show, close}) {
                                     className="rounded-lg border border-black w-64"
                                     onChange={(e)=>{setName(e.target.value)}}
                                     onKeyDown={handleKeyPress}
+                                    maxLength="40"
                                 />
                             </div>
                             <div className="flex flex-row p-4 justify-between">
@@ -271,14 +289,19 @@ export default function Create_League({show, close}) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex flex-col p-4">
-                                <h3 className="text-lg font-semibold">Added: </h3>
-                                <div className="h-96 overflow-y-auto">
+                            <div className="flex flex-col p-4 h-full grow">
+                                <h3 className="text-lg font-semibold">
+                                    Added {"(" + addedList.length + ((addedList.length == 250) ? " MAX" : "") + ")"}: 
+                                </h3>
+                                <div className="h-full overflow-y-auto">
                                     {added_swimmers}
                                 </div>
                             </div>
                         </div>
-                        <div className="flex flex-row justify-end">
+                        <div className="flex flex-row justify-between">
+                            <span className={`${(errorMessage) ? "visible" : "invisible"} flex justify-center items-center rounded rounded-lg p-1 px-2 bg-red-500 text-white`}>
+                                {errorMessage}
+                            </span>
                             <input 
                                 type="submit"
                                 value="Create League"

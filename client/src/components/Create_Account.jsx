@@ -31,10 +31,22 @@ export default function Create_Account() {
 
             if (response.status === 409) {
                 const result = await response.json();
-                if (result.error === "email") {
+                if (result.error === "duplicate_email") {
                     setCreateAccountError("Email is already registered");
                 } else {
                     setCreateAccountError("Username is already in use");
+                }
+                return;
+            }
+
+            if (response.status === 400) {
+                const result = await response.json();
+                if (result.error === "password") {
+                    setCreateAccountError("Invalid password");
+                } else if (result.error == "invalid_email") {
+                    setCreateAccountError("Invalid email");
+                } else if (result.error == "missing_field") {
+                    setCreateAccountError("At least one field is missing");
                 }
                 return;
             }
@@ -69,6 +81,7 @@ export default function Create_Account() {
                             id="email" 
                             className="rounded-md border-2"
                             onChange={(e) => {updateForm({email: e.target.value})}}
+                            maxLength="30"
                         />
                     </div>
                     <div className="w-full">
@@ -96,6 +109,14 @@ export default function Create_Account() {
                             className="rounded-md border-2"
                             onChange={(e) => {updateForm({password: e.target.value})}}
                         />
+                    </div>
+                    <div className="text-sm pb-5">
+                        Password must:
+                        <ul style={{ listStyleType: 'disc' }} className="pl-4">
+                            <li>be at least 12 characters long</li>
+                            <li>contain at least one lowercase, uppercase, special, and digit character</li>
+                            <li>not contain any whitespace character</li>
+                        </ul>
                     </div>
                     <div className={`h-1/12 flex justify-center items-center ${(!createAccountError) ? "invisible" : "visible"}`}>
                         <span className="bg-red-600 text-white p-2 rounded rounded-lg">
