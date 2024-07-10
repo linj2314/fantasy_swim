@@ -18,6 +18,7 @@ export default function League_View() {
     const [currentlyChosen, setCurrentlyChosen] = useState([]);
     const [swimmerLookup, setSwimmerLookup] = useState({});
     const [tempPoints, setTempPoints] = useState({});
+    const [draftError, setDraftError] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -194,12 +195,26 @@ export default function League_View() {
         if (status == 0) {
             return(
                 <div className="basis-1/2 flex flex-col justify-center items-center rounded rounded-lg border border-slate-300 m-4 mx-0">
-                    {(id == leagueInfo.creator) && <button 
-                        className="rounded rounded-lg bg-blue-300 p-4 text-xl"
+                    {(id == leagueInfo.creator) && ((participants.length > 1) ? 
+                    <button 
+                        className="rounded rounded-lg bg-blue-300 hover:bg-blue-200 p-4 text-xl"
                         onClick={() => setDraft(true)}
                     >
                         Start Draft
-                    </button>}
+                    </button> 
+                    : 
+                    <>
+                        <button 
+                            className="rounded rounded-lg bg-slate-300 p-4 text-xl"
+                            onClick={() => setDraft(true)}
+                        >
+                            Start Draft
+                        </button>
+                        <span className="m-4 px-4 py-2 rounded rounded-lg bg-red-500 text-white">
+                            Need more participants to start draft; reload page to show newly joined participants
+                        </span>
+                    </>
+                    )}
                     {(id != leagueInfo.creator) && 
                     <>
                         <button className="rounded rounded-lg bg-slate-300 p-4 text-xl">
@@ -343,6 +358,10 @@ export default function League_View() {
     }
 
     async function submitDraft() {
+        if (swimmers.length > 0) {
+            setDraftError("Not all swimmers have been drafted yet");
+            return;
+        }
         try {
             const response = await fetch("http://localhost:5050/league/draft", {
                 method: "PATCH",
@@ -468,15 +487,21 @@ export default function League_View() {
                         </div>
                     </div>
                 </div>
+                <span className={`mx-4 px-4 py-2 self-end rounded rounded-lg bg-red-500 text-white ${(draftError) ? "visible" : "invisible"}`}>
+                    {draftError}
+                </span>
                 <div className="flex flex-row justify-end p-4">
                     <button 
-                        className="rounded rounded-lg p-4 bg-red-500 mr-4 hover:cursor-pointer"
-                        onClick={() => setDraft(false)}    
+                        className="flex flex-col items-center justify-center rounded rounded-lg p-4 bg-red-500 mr-4 hover:bg-red-400 hover:cursor-pointer"
+                        onClick={() => {
+                            setDraft(false); 
+                            setDraftError("");
+                        }}    
                     >
                         Cancel
                     </button>
                     <button 
-                        className="rounded rounded-lg p-4 bg-blue-300 hover:cursor-pointer"
+                        className="rounded rounded-lg p-4 bg-blue-300 hover:bg-blue-200 hover:cursor-pointer"
                         onClick={submitDraft}
                     >
                         Confirm Selections

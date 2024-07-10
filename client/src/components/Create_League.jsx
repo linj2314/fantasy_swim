@@ -148,6 +148,7 @@ export default function Create_League({show, close}) {
 
     async function clickDropdown(obj) {
         if (obj.source == "Swimmers") {
+            if (addedList.length == 250) {return;}
             let found = false;
             for (const a of addedList) {
                 if (obj.id == a.id) {
@@ -162,7 +163,13 @@ export default function Create_League({show, close}) {
             setShowLoading(true);
             try {
                 const response = await fetch("http://localhost:5050/league/roster/" + obj.url.split("/")[2], {
-                    method: "GET",
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        max_length: Math.max(0, 250 - addedList.length),
+                    }),
                 });
                 const results = await response.json();
                 setAddedList((prev) => [...prev, ...results]);
@@ -237,8 +244,8 @@ export default function Create_League({show, close}) {
             <div className="h-screen w-screen fixed opacity-25 bg-gray-800 flex items-center justify-center"></div>
             <div className="flex h-screen w-screen justify-center items-center fixed">
                 <div className="bg-slate-100 p-10 shadow-lg h-screen w-1/3 flex flex-col">
-                    <form onSubmit={onSubmit} className="flex flex-col h-full">
-                        <div className="flex flex-col h-full">
+                    <form onSubmit={onSubmit} className="flex flex-col h-full justify-between">
+                        <div className="flex flex-col h-5/6">
                             <div className="flex justify-between border-b-2 border-slate-500 p-4">
                                 <h3 className="text-3xl font-semibold pr-48">
                                     Create League
@@ -276,6 +283,7 @@ export default function Create_League({show, close}) {
                                     onKeyDown={handleKeyPress}
                                 />
                             </div>
+                            <h3 className="text-lg p-4 pb-0">Add swimmers: </h3>
                             <div className="p-4 flex flex-col justify-center items-center rounded-lg w-full">
                                 <div className="w-full relative">
                                     <input 
@@ -289,11 +297,19 @@ export default function Create_League({show, close}) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex flex-col p-4 h-full grow">
+                            <ul style={{ listStyleType: 'disc' }} className="px-8">
+                                <li>
+                                    You may add up to 250 swimmers into the list below, but you can only create a league with 200 swimmers max
+                                </li>
+                                <li>
+                                    Be aware of which teams/swimmers are currently active
+                                </li>
+                            </ul>
+                            <div className="flex flex-col p-4 h-full">
                                 <h3 className="text-lg font-semibold">
                                     Added {"(" + addedList.length + ((addedList.length == 250) ? " MAX" : "") + ")"}: 
                                 </h3>
-                                <div className="h-full overflow-y-auto">
+                                <div className="h-1/2 overflow-y-auto">
                                     {added_swimmers}
                                 </div>
                             </div>

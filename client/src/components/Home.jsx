@@ -11,6 +11,7 @@ const Home = () => {
         username: "",
         email: "",
     });
+    const home_url = window.location.href;
     let { id } = useParams();
 
     function updateUserInfo(value) {
@@ -19,9 +20,15 @@ const Home = () => {
 		});
 	}
 
-    const open_join_league = () => { setShowJoin(true); }
+    const open_join_league = () => { 
+        navigate("/home/" + id); 
+        setShowJoin(true); 
+    }
     const close_join_league = () => { setShowJoin(false); }
-    const open_create_league = () => { setShowCreate(true); }
+    const open_create_league = () => { 
+        navigate("/home/" + id); 
+        setShowCreate(true); 
+    }
     const close_create_league = () => { setShowCreate(false); }
 
     useEffect(() => {

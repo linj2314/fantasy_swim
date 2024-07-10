@@ -34,8 +34,10 @@ router.get('/api/search/:q', async (req, res) => {
 });
 
 //for retrieving roster of a team
-router.get('/roster/:teamId', async (req, res) => {
+router.post('/roster/:teamId', async (req, res) => {
     const team_id = req.params.teamId;
+    const max_length = req.body.max_length;
+    if (max_length === 0) return res.status(200).json([]);
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
         await driver.get('https://www.swimcloud.com/team/' + team_id + '/roster/');
@@ -53,7 +55,11 @@ router.get('/roster/:teamId', async (req, res) => {
         await driver.findElement(By.css('label[for="F"]')).click();
         await driver.wait(until.elementIsVisible(await driver.findElement(By.css(".c-title"))), 100);
         const swimmers2 = await driver.findElements(By.css('.c-table-clean tbody tr'));
+        let count = 0;
         for (const s of swimmers2) {
+            if (count >= max_length) {
+                break;
+            }
             const name = s.findElement(By.css(".u-text-semi"));
             const hometown = s.findElement(By.css(".u-text-truncate"));
             ret.push({
@@ -61,11 +67,9 @@ router.get('/roster/:teamId', async (req, res) => {
                 name: await name.getText(),
                 hometown: await hometown.getText(),
             });
-            if (ret.length == 250) {
-                break;
-            }
+            count++;
         }
-        res.status(200).json(ret);
+        res.status(200).json(ret.slice(0, max_length));
     } catch(error) {
         console.error("An error occured while retrieving roster", error);
     } finally {
