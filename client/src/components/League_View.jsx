@@ -25,7 +25,7 @@ export default function League_View() {
     useEffect(() => {
         async function retrieve_info() {
             try {
-                let response = await fetch("https://fantasy-swim-backend.vercel.app/league/info", {
+                let response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/info", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -44,7 +44,7 @@ export default function League_View() {
                 setStatus(result.status);
                 setSwimmers(result.swimmers);
 
-                response = await fetch("https://fantasy-swim-backend.vercel.app/league/participants", {
+                response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/participants", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -363,7 +363,7 @@ export default function League_View() {
             return;
         }
         try {
-            const response = await fetch("https://fantasy-swim-backend.vercel.app/league/draft", {
+            const response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/draft", {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -385,7 +385,7 @@ export default function League_View() {
             setCurrentlyChosen([]);
             setSelectedP({});
             try {
-                let response = await fetch("https://fantasy-swim-backend.vercel.app/league/info", {
+                let response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/info", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -444,7 +444,7 @@ export default function League_View() {
 
     async function updateFunc() {
         try {
-            const response = await fetch("https://fantasy-swim-backend.vercel.app/league/update_results", {
+            const response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/update_results", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

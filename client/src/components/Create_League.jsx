@@ -22,7 +22,7 @@ export default function Create_League({show, close}) {
             }
 
             try {
-                const response = await fetch("https://fantasy-swim-backend.vercel.app/league/api/search/" + query, {
+                const response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/api/search/" + query, {
                     method: "GET",
                 });
                 
@@ -96,7 +96,7 @@ export default function Create_League({show, close}) {
         }
 
         try {
-            const response = await fetch("https://fantasy-swim-backend.vercel.app/league", {
+            const response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league", {
                 method: "POST",
                 headers: {
 					"Content-Type": "application/json",
@@ -122,7 +122,7 @@ export default function Create_League({show, close}) {
             }
             */
 
-            const response2 = await fetch("https://fantasy-swim-backend.vercel.app/user/league", {
+            const response2 = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/user/league", {
                 method: "PATCH",
                 headers: {
 					"Content-Type": "application/json",
@@ -162,7 +162,7 @@ export default function Create_League({show, close}) {
         } else {
             setShowLoading(true);
             try {
-                const response = await fetch("https://fantasy-swim-backend.vercel.app/league/roster/" + obj.url.split("/")[2], {
+                const response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/roster/" + obj.url.split("/")[2], {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
