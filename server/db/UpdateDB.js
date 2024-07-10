@@ -1,7 +1,7 @@
 import { League } from "./schema.js";
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
 import {Options} from "selenium-webdriver/chrome.js";
-import score from "../Score.js";
+import score from "./score.js";
 
 const options = new Options();
 options.addArguments('--remote-debugging-pipe');
