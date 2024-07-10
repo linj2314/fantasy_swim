@@ -18,7 +18,7 @@ export default function Join_League({ show, close }) {
         let id = await verify();
 
         try {
-            let response = await fetch("http://localhost:5050/league/participant", {
+            let response = await fetch("https://fantasy-swim-backend.vercel.app/league/participant", {
                 method: "POST",
                 headers: {
 					"Content-Type": "application/json",
@@ -44,7 +44,7 @@ export default function Join_League({ show, close }) {
                 throw new Error("error occured while attempting to join league");
             }
 
-            response = await fetch("http://localhost:5050/user/league", {
+            response = await fetch("https://fantasy-swim-backend.vercel.app/user/league", {
                 method: "PATCH",
                 headers: {
 					"Content-Type": "application/json",

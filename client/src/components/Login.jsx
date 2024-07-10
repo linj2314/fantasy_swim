@@ -21,7 +21,7 @@ export default function Login() {
         e.preventDefault();
         const user = { ...form };
 		try {
-			const response = await fetch("http://localhost:5050/user/login", {
+			const response = await fetch("https://fantasy-swim-backend.vercel.app/user/login", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

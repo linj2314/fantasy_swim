@@ -33,7 +33,7 @@ const Home = () => {
 
     useEffect(() => {
         async function verify() {
-            const response = await fetch("http://localhost:5050/user/home", {
+            const response = await fetch("https://fantasy-swim-backend.vercel.app/user/home", {
                 method: "GET",
                 headers: {
                     "Authorization": localStorage.getItem("token"),
