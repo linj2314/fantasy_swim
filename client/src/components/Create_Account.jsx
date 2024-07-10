@@ -21,7 +21,7 @@ export default function Create_Account() {
         e.preventDefault();
         const user = { ...form };
 		try {
-			let response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/user", {
+			let response = await fetch("https://fantasy-swim-backend.vercel.app/user", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

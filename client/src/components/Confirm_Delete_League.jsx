@@ -9,7 +9,7 @@ export default function Confirm_Delete_League({show, close, league_id}) {
 
     async function confirm_deletion() {
         try {
-            const response = await fetch("https://fantasy-swim-backend-git-master-linj2314s-projects.vercel.app/league/delete", {
+            const response = await fetch("https://fantasy-swim-backend.vercel.app/league/delete", {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
