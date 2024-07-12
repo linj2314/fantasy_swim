@@ -38,7 +38,7 @@
     "crons": [
         {
             "path": "/league/update",
-            "schedule": "15 0 * * *"
+            "schedule": "0 0 * * *"
         }
     ]
 }
