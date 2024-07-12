@@ -325,7 +325,7 @@ router.post('/test', async (req, res) => {
         res.status(500).json({error: "Error while testing"});
     }
 });
-
+//
 router.get("/update", async (req, res) => {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
