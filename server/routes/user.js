@@ -7,7 +7,7 @@ import passwordValidator from "password-validator";
 const router = express.Router();
 const secretKey = process.env.JWT_SECRET;
 const expireTime = process.env.JWT_EXPIRE;
-
+//
 router.post("/", async (req, res) => {
     try {
         if (!req.body.username || !req.body.email || !req.body.password) {
