@@ -206,7 +206,6 @@ export default function League_View() {
                     <>
                         <button 
                             className="rounded rounded-lg bg-slate-300 p-4 text-xl"
-                            onClick={() => setDraft(true)}
                         >
                             Start Draft
                         </button>
@@ -487,7 +486,7 @@ export default function League_View() {
                         </div>
                     </div>
                 </div>
-                <span className={`mx-4 px-4 py-2 self-end rounded rounded-lg bg-red-500 text-white ${(draftError) ? "visible" : "invisible"}`}>
+                <span className={`mx-4 px-4 py-2 self-end rounded rounded-lg bg-red-500 text-white ${(draftError && draft) ? "visible" : "invisible"}`}>
                     {draftError}
                 </span>
                 <div className="flex flex-row justify-end p-4">

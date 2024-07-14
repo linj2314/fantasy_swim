@@ -46,52 +46,54 @@ export default function Login() {
 
     return(
         <>
-            <div className="flex flex-col items-center justify-center h-screen w-screen">
-                <form
-                    onSubmit={ onSubmit }
-                    className="flex flex-col items-center justify-center h-full w-48"
-                >
-                    <h3 className="text-xl font-semibold p-4">Login</h3>
-                    <div className="flex items-start w-full">
-                        <label htmlFor="user/email" className="text-lg">
-                            Username / Email
-                        </label>
-                    </div>
-                    <div className="pb-5 w-full">
-                        <input 
-                            type="text" 
-                            id="user/email" 
-                            className="rounded-md border-2 w-full"
-                            onChange={(e) => {updateForm({username: e.target.value, email: e.target.value})}}
-                            maxLength="30"
-                        />
-                    </div>
-                    <div className="flex items-start w-full">
-                        <label htmlFor="pass" className="text-lg">
-                            Password
-                        </label>
-                    </div>
-                    <div className="pb-5 w-full">
-                        <input 
-                            type="text" 
-                            id="pass" 
-                            className="rounded-md border-2 w-full"
-                            onChange={(e) => {updateForm({password: e.target.value})}}
-                        />
-                    </div>
-                    <div className={`h-1/12 flex justify-center items-center ${(!loginError) ? "invisible" : "visible"}`}>
-                        <span className="bg-red-600 text-white p-2 rounded rounded-lg">
-                            {loginError}
-                        </span>
-                    </div>
-                    <div className="flex justify-center p-4">
-                        <input 
-                            type="submit"
-                            value="Login"
-                            className="p-2 border rounded rounded-lg hover:bg-slate-100 text-lg font-semibold"
-                        />
-                    </div>
-                </form>
+            <div className="flex flex-col items-center justify-center h-screen w-screen bg-[url('./assets/swim_bg3.png')] bg-cover">
+                <div className="flex flex-col items-center justify-center bg-white rounded rounded-lg w-1/6">
+                    <form
+                        onSubmit={ onSubmit }
+                        className="flex flex-col items-center justify-center h-full w-3/4"
+                    >
+                        <h3 className="text-2xl font-semibold p-4">Login</h3>
+                        <div className="flex items-start w-full">
+                            <label htmlFor="user/email" className="text-lg">
+                                Username / Email
+                            </label>
+                        </div>
+                        <div className="pb-5 w-full">
+                            <input 
+                                type="text" 
+                                id="user/email" 
+                                className="rounded-md border-2 w-full"
+                                onChange={(e) => {updateForm({username: e.target.value, email: e.target.value})}}
+                                maxLength="30"
+                            />
+                        </div>
+                        <div className="flex items-start w-full">
+                            <label htmlFor="pass" className="text-lg">
+                                Password
+                            </label>
+                        </div>
+                        <div className="w-full">
+                            <input 
+                                type="password" 
+                                id="pass" 
+                                className="rounded-md border-2 w-full"
+                                onChange={(e) => {updateForm({password: e.target.value})}}
+                            />
+                        </div>
+                        <div className={`h-1/12 pt-5 flex justify-center items-center ${(!loginError) ? "invisible" : "visible"}`}>
+                            <span className="bg-red-600 text-white p-2 rounded rounded-lg">
+                                {loginError}
+                            </span>
+                        </div>
+                        <div className="flex justify-center p-4">
+                            <input 
+                                type="submit"
+                                value="Login"
+                                className="p-2 border rounded rounded-lg hover:bg-slate-100 text-lg font-semibold"
+                            />
+                        </div>
+                    </form>
+                </div>
             </div>
         </>
     );

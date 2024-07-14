@@ -54,6 +54,11 @@ const Home = () => {
         verify();
     }, []);
 
+    function logout() {
+        localStorage.removeItem("token");
+        navigate("/")
+    }
+
     return(
         <>
             <Join_League show={showJoin} close={close_join_league}/>
@@ -84,24 +89,22 @@ const Home = () => {
                             Create League
                         </div>
                     </div>
-                    <div className="hover:bg-slate-200 hover:cursor-pointer">
-                        <div className="p-3 text-lg">
-                            Settings
-                        </div>
-                    </div>
-                    <div className="grow">
-
-                    </div>
+                    <div className="grow" />
                     <div className="">
                         <div className="pl-3 text-lg font-semibold">
                             {userInfo.username}
                         </div>
                     </div>
-                        <div className="p-3 text-lg">
-                            {userInfo.email}
+                    <div className="p-3 text-lg">
+                        {userInfo.email}
+                    </div>
+                    <div
+                        className="hover:bg-red-500 hover:cursor-pointer"
+                        onClick={ logout }    
+                    >
+                        <div className="p-3 text-lg text-red-500 hover:text-white">
+                            Log Out
                         </div>
-                    <div>
-
                     </div>
                 </div>
                 <div className="basis-5/6">
