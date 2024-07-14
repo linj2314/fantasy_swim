@@ -435,6 +435,6 @@ router.get("/update", async (req, res) => {
     }
     driver.quit();
     return res.status(204).send();
-})
+});
 
 export default router;
