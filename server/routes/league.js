@@ -232,7 +232,7 @@ router.patch('/draft', async (req, res) => {
     }
 });
 
-//update weekly results; only run this once a day (REMOVE THIS LATER)
+//update weekly results; only run this once a day
 router.post('/update_results', async (req, res) => {
     let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
     try {
