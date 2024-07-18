@@ -111,8 +111,9 @@ router.patch('/league', async (req, res) => {
             return res.status(404).json({ error: 'Adding league failed' });
         }
 
-        if (user.leagues.length == 9) {
-            return res.status(507).send("Cannot add another league");
+        if (user.leagues.length == 3) {
+            const league = await League.findByIdAndDelete(req.body.league_id);
+            return res.status(507).json({error: "too_many_leagues"});
         }
 
         user.leagues.push(req.body.league_id);
