@@ -116,12 +116,6 @@ export default function Create_League({show, close}) {
             const result = await response.json();
             const league_id = result.id;
 
-            /*
-            if (!id) {
-                verify();
-            }
-            */
-
             const response2 = await fetch("http://localhost:5050/user/league", {
                 method: "PATCH",
                 headers: {
@@ -132,6 +126,11 @@ export default function Create_League({show, close}) {
                     league_id: league_id,
                 }),
             });
+
+            if (response2.status == 507) {
+                setErrorMessage("Max leagues reached; cannot create new league");
+                return;
+            }
 
             if (!response2.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
