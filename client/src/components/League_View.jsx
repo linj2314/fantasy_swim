@@ -143,7 +143,11 @@ export default function League_View() {
 
     function Event({event, times}) {
         const times_list = [];
-        for (const [swimmer, time] of Object.entries(leagueInfo.weekly_results[event])) {
+        let temp = Object.entries(times);
+        temp.sort((a, b) => a[1] - b[1]);
+        for (const t of temp) {
+            const swimmer = t[0];
+            const time = t[1];
             let drafted_by_you = false;
             for (const s of leagueInfo.draft_selections[id]) {
                 if (s.link === "https://www.swimcloud.com/swimmer/" + swimmer) {
@@ -206,7 +210,6 @@ export default function League_View() {
                     <>
                         <button 
                             className="rounded rounded-lg bg-slate-300 p-4 text-xl"
-                            onClick={() => setDraft(true)}
                         >
                             Start Draft
                         </button>
@@ -250,8 +253,8 @@ export default function League_View() {
                     <span className="p-2 pb-0">
                         Swimmers/divers in your league are displayed in blue
                     </span>
-                    <div className="flex flex-col rounded rounded-lg h-full w-11/12 m-4 grow border border-slate-300 overflow-auto">
-                        {weekly_results}
+                    <div className={`flex flex-col rounded rounded-lg w-11/12 m-4 grow border border-slate-300 overflow-auto ${(weekly_results.length > 0) ? '' : 'justify-center'}`}>
+                        {(weekly_results.length > 0) ? weekly_results : <span className="self-center">No results yet</span>}
                     </div>
                 </div>
             );
@@ -281,10 +284,10 @@ export default function League_View() {
                 <div className="text-xl font-semibold w-1/3">
                     {placing + ". " +  user}
                 </div>
-                <div className="text-xl font-semibold w-1/3 text-center">
-                    {points}
+                <div className="text-lg font-semibold w-1/3 text-center">
+                    {Math.round(points * 100) / 100}
                 </div>
-                <div className="text-xl font-semibold w-1/3 text-end">
+                <div className="text-lg font-semibold w-1/3 text-end">
                     {"+ " + Math.round(temp_points * 100) / 100}
                 </div>
             </div>
@@ -293,8 +296,12 @@ export default function League_View() {
 
     const standings_results = [];
     if (leagueInfo.points) {
-        let index = 1;
-        for (const [user, points] of Object.entries(leagueInfo.points)) {
+        const temp = Object.entries(leagueInfo.points);
+        temp.sort((a, b) => a[1] - b[1]);
+        let index = 1; 
+        for (const t of temp) {
+            const user = t[0];
+            const points = t[1];
             let name;
             for (const p of participants) {
                 if (p.id == user) {
@@ -442,16 +449,11 @@ export default function League_View() {
         {swimmer.name}
     </div>);
 
+    /*
     async function updateFunc() {
         try {
-            const response = await fetch("https://fantasy-swim-backend.vercel.app/league/update_results", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    league_id: league_id,
-                }),
+            const response = await fetch("http://localhost:5050/league/update2", {
+                method: "GET",
             });
 
             if (!response.ok) {
@@ -463,6 +465,7 @@ export default function League_View() {
             console.error("Error while updating weekly results", error);
         }
     }
+    */
 
     return(
         <>  
@@ -487,7 +490,7 @@ export default function League_View() {
                         </div>
                     </div>
                 </div>
-                <span className={`mx-4 px-4 py-2 self-end rounded rounded-lg bg-red-500 text-white ${(draftError) ? "visible" : "invisible"}`}>
+                <span className={`mx-4 px-4 py-2 self-end rounded rounded-lg bg-red-500 text-white ${(draftError && draft) ? "visible" : "invisible"}`}>
                     {draftError}
                 </span>
                 <div className="flex flex-row justify-end p-4">
@@ -523,12 +526,12 @@ export default function League_View() {
                             </div>
                         </div>
                         <div className="flex flex-col basis-1/2 rounded rounded-lg border border-slate-300 m-4 mt-0">
-                            <div className="flex text-xl font-semibold p-4 justify-center">
-                                Settings
+                            <div className="flex text-xl font-semibold p-4 self-center">
+                                Trade Swimmers
                             </div>
-                            <button onClick={updateFunc}>
-                                Update
-                            </button>
+                            <div className="flex justify-center items-center grow">
+                                <span>This feature is coming soon!</span>
+                            </div>
                         </div>
                     </div>
                     {main_content}

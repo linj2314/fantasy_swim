@@ -1,0 +1,54 @@
+<tr>
+          <td>
+            50 Y Free
+            
+              
+                <span class="u-color-mute">Relay Leadoff</span>
+              
+            
+          </td>
+
+          <td class="u-text-semi u-text-end">
+            
+              <a href="/results/224378/event/9/?id=59681152#time59681152">23.57</a>
+            
+          </td>
+
+           
+
+          <td class="u-text-end">
+            
+              
+                &ndash;
+              
+            
+          </td>
+
+          <td class="u-text-end">
+            
+              
+
+
+	
+
+	
+
+	
+	  <span class="u-color-danger" title="+0.14 (23.43)">
+	  	-0.6%
+	  </span>
+	
+
+
+            
+          </td>
+
+          
+            <td>
+              
+
+            </td>
+          
+
+          
+        </tr>
