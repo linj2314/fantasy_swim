@@ -38,42 +38,49 @@ router.post('/roster/:teamId', async (req, res) => {
     const team_id = req.params.teamId;
     const max_length = req.body.max_length;
     if (max_length === 0) return res.status(200).json([]);
-    let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
+    
     try {
-        await driver.get('https://www.swimcloud.com/team/' + team_id + '/roster/');
         const ret = [];
-        const swimmers = await driver.findElements(By.css('.c-table-clean tbody tr'));
+        let response = await fetch('https://www.swimcloud.com/team/' + team_id + '/roster/', {
+            method: "GET",
+        });
+        let str = await response.text();
+
+        let re = /<td>[\s\S]*?<\/td>/gm;
+        let swimmers = str.match(re);
         for (const s of swimmers) {
-            const name = s.findElement(By.css(".u-text-semi"));
-            const hometown = s.findElement(By.css(".u-text-truncate"));
+            re = /[a-zA-z]+, [a-zA-z]+/;
+            let name = s.match(re)[0];
+            re = /\/swimmer\/\d+/;
+            let link = s.match(re)[0];
             ret.push({
-                id: await name.getAttribute("href"),
-                name: await name.getText(),
-                hometown: await hometown.getText(),
+                id: "https://www.swimcloud.com/" + link,
+                name: name,
             });
         }
-        await driver.findElement(By.css('label[for="F"]')).click();
-        await driver.wait(until.elementIsVisible(await driver.findElement(By.css(".c-title"))), 100);
-        const swimmers2 = await driver.findElements(By.css('.c-table-clean tbody tr'));
-        let count = 0;
-        for (const s of swimmers2) {
-            if (count >= max_length) {
-                break;
-            }
-            const name = s.findElement(By.css(".u-text-semi"));
-            const hometown = s.findElement(By.css(".u-text-truncate"));
+
+        response = await fetch('https://www.swimcloud.com/team/' + team_id + '/roster/?gender=F', {
+            method: "GET",
+        });
+        str = await response.text();
+
+        re = /<td>[\s\S]*?<\/td>/gm;
+        swimmers = str.match(re);
+        for (const s of swimmers) {
+            re = /[a-zA-z]+, [a-zA-z]+/;
+            let name = s.match(re)[0];
+            re = /\/swimmer\/\d+/;
+            let link = s.match(re)[0];
             ret.push({
-                id: await name.getAttribute("href"),
-                name: await name.getText(),
-                hometown: await hometown.getText(),
+                id: "https://www.swimcloud.com/" + link,
+                name: name,
             });
-            count++;
         }
+
         res.status(200).json(ret.slice(0, max_length));
     } catch(error) {
         console.error("An error occured while retrieving roster", error);
-    } finally {
-        await driver.quit();
+        return res.status(400).json({error: error});
     }
 });
 
@@ -234,128 +241,6 @@ router.patch('/draft', async (req, res) => {
 
 //update weekly results; only run this once a day
 router.get("/update", async (req, res) => {
-    const fstart = Date.now();
-    let driver = await new Builder().forBrowser(Browser.CHROME).setChromeOptions(options).build();
-    console.log("START------------------------------------------------------------------");
-    try {
-        const leagues = await League.find({status: { $in: [1, 2, 3] } });
-
-        const updateLeague = async (league) => {
-            if (league.status == 1) {
-                const date = new Date();
-                date.setHours(0, 0, 0, 0);
-                league.start_date = date;
-                league.status == 2;
-            } else if (league.status == 2) {
-                let date = new Date();
-                date.setHours(0, 0, 0, 0);
-                //check if week is done
-                if (((date - league.start_date) / (60 * 60 * 24 * 1000)) % 7 === 0) {
-                    let temp_points = {};
-                    for (const [user, swimmers] of league.draft_selections) {
-                        temp_points[user] = 0;
-                        for (const s of swimmers) {
-                            const swimmer_id = s.link.match(/\d+/g).join('');
-                            for (const [event, results] of league.weekly_results) {
-                                if (results.get(swimmer_id)) {
-                                    temp_points[user] += score(event, results.get(swimmer_id));
-                                }
-                            }
-                        }
-                    }
-                    for (const [user, points] of Object.entries(temp_points)) {
-                        let temp = league.points.get(user);
-                        temp += points;
-                        league.points.set(user, points);
-                    }
-                    league.weekly_results.clear();
-                }
-
-                //check if league is done
-                if (((date - league.start_date) / (60 * 60 * 24 * 1000)) / 7 === league.duration) {
-                    league.status = 3;
-                    await league.save();
-                    return;
-                }
-            } else if (league.status == 3) {
-                let date = new Date();
-                date.setHours(0, 0, 0, 0);
-                if (((date - league.start_date) / (60 * 60 * 24 * 1000)) === league.duration * 7 + 3) {
-                    await league.deleteOne();
-                    return;
-                }
-            }
-            for (const [_, swimmers] of league.draft_selections) {
-                for (const s of swimmers) {
-                    await driver.get(s.link);
-                    const swimmer_id = s.link.match(/\d+/g).join('');
-
-                    const date_text = await driver.findElement(By.css(".u-text-normal")).getText();
-                    const date_arr = date_text.split(' ');
-                    const tmp = date_arr[1].split('\u{2013}');
-                    date_arr[1] = tmp[tmp.length - 1];
-                    const date = date_arr.join(" ");
-
-                    const day = 60 * 60 * 24 * 1000;
-                    const date_obj = new Date(date);
-                    const next_date = new Date(date_obj.getTime() + day);
-                    const today = new Date();
-                    
-                    if (today.toDateString() !== next_date.toDateString()) {
-                        continue;
-                    }
-
-                    const tb = await driver.findElement(By.css(".table"));
-                    const rows = await tb.findElements(By.css("tbody tr"));
-                    for (const r of rows) {
-                        const cells = (await r.findElements(By.css("td"))).slice(0, 2);
-                        const event_text = await cells[0].getText();
-                        const mini_text = await cells[0].findElement(By.css("span")).getText();
-                        if (mini_text == "Relay Split" || mini_text == "Extracted" || mini_text == "Relay Leadoff") {
-                            continue;
-                        }
-                        const event = event_text.replace(mini_text, "").trim();
-                        const time = await cells[1].getText();
-                        if (league.weekly_results.has(event)) {
-                            let swims = league.weekly_results.get(event);
-                            if (swims.has(swimmer_id)) {
-                                if (swims.get(swimmer_id) > time) {
-                                    swims.set(swimmer_id, time);
-                                }
-                            } else {
-                                swims.set(swimmer_id, time);
-                            }
-                            const temp_array = Array.from(swims);
-                            temp_array.sort((a, b) => a[1] - b[1]);
-                            const sorted_swims = new Map(temp_array);
-                            league.weekly_results.set(event, sorted_swims);
-                        } else {
-                            const swims = new Map();
-                            swims.set(swimmer_id, time);
-                            league.weekly_results.set(event, swims);
-                        }
-                    }
-                }
-            }
-
-            league.weekly_results = new Map([...league.weekly_results.entries()].sort((a, b) => b[0] - a[0]));
-            await league.save();
-        };
-
-        await Promise.all(leagues.map(updateLeague));
-    } catch(error) {
-        console.log(error);
-        driver.quit();
-        return res.status(500).json({error: "Error occured while daily update to leagues"});
-    }
-    driver.quit();
-    console.log("DONE------------------------------------------------------------------");
-    const fend = Date.now();
-    console.log(`Execution time: ${(fend - fstart) / 1000} seconds`);
-    return res.status(204).send();
-});
-
-router.get("/update2", async (req, res) => {
     async function fetchAndProcess(link, league) {
         const swimmer_id = link.match(/\d+/g).join('');
         let str;
