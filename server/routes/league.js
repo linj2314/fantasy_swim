@@ -54,7 +54,7 @@ router.post('/roster/:teamId', async (req, res) => {
             re = /\/swimmer\/\d+/;
             let link = s.match(re)[0];
             ret.push({
-                id: "https://www.swimcloud.com/" + link,
+                id: "https://www.swimcloud.com" + link,
                 name: name,
             });
         }
@@ -72,7 +72,7 @@ router.post('/roster/:teamId', async (req, res) => {
             re = /\/swimmer\/\d+/;
             let link = s.match(re)[0];
             ret.push({
-                id: "https://www.swimcloud.com/" + link,
+                id: "https://www.swimcloud.com" + link,
                 name: name,
             });
         }
