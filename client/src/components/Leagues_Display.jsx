@@ -99,14 +99,18 @@ export default function Leagues_Display() {
     return(
         <>
             <Confirm_Delete_League show={showConfirm} close={close_delete_league} league_id={leagueId}/>
-            <div className="relative grid grid-cols-3 grid-rows-3 gap-4 p-3 h-screen items-center justify-center">
+            <div className="grid grid-cols-3 grid-rows-3 gap-4 p-3 h-screen items-center justify-center">
                 {windows}
                 {leagues.length == 0 && (
                     <div className="col-span-3 row-span-3 flex items-center justify-center">
                         When you join/create leagues, they will appear here
                     </div>
                 )}
-                <span className="absolute bottom-0 right-0 p-4 text-lg">Note: at this time, you will be limited to participated in at most 3 leagues concurrently</span>
+                {leagues.length == 3 && (
+                    <div className="col-span-3 row-span-3 flex items-center justify-center">
+                        Note: at this time, you are limited to participating in at most 3 leagues concurrently
+                    </div>
+                )}
             </div>
         </>
     );

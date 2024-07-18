@@ -90,8 +90,8 @@ export default function Create_League({show, close}) {
             return;
         }
 
-        if (addedList.length > 200) {
-            setErrorMessage("Max swimmers allowed is 200");
+        if (addedList.length > 100) {
+            setErrorMessage("Max swimmers allowed is 100");
             return;
         }
 
@@ -127,7 +127,8 @@ export default function Create_League({show, close}) {
                 }),
             });
 
-            if (response2.status == 507) {
+            if (response2.status === 507) {
+                console.log("test");
                 setErrorMessage("Max leagues reached; cannot create new league");
                 return;
             }
@@ -135,10 +136,13 @@ export default function Create_League({show, close}) {
             if (!response2.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            console.log("League Created!")
+            close_window();
+            reset_fields();
+            window.location.reload();
         } catch(error) {
             console.error("An error occured while creating league", error);
-        } finally {
-            console.log("League Created!")
             close_window();
             reset_fields();
             window.location.reload();
@@ -147,7 +151,7 @@ export default function Create_League({show, close}) {
 
     async function clickDropdown(obj) {
         if (obj.source == "Swimmers") {
-            if (addedList.length == 250) {return;}
+            if (addedList.length == 150) {return;}
             let found = false;
             for (const a of addedList) {
                 if (obj.id == a.id) {
@@ -167,7 +171,7 @@ export default function Create_League({show, close}) {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        max_length: Math.max(0, 250 - addedList.length),
+                        max_length: Math.max(0, 150 - addedList.length),
                     }),
                 });
                 const results = await response.json();
@@ -298,7 +302,7 @@ export default function Create_League({show, close}) {
                             </div>
                             <ul style={{ listStyleType: 'disc' }} className="px-8">
                                 <li>
-                                    You may add up to 250 swimmers into the list below, but you can only create a league with 200 swimmers max
+                                    You may add up to 150 swimmers into the list below, but you can only create a league with 100 swimmers max
                                 </li>
                                 <li>
                                     Be aware of which teams/swimmers are currently active
@@ -306,7 +310,7 @@ export default function Create_League({show, close}) {
                             </ul>
                             <div className="flex flex-col p-4 h-full">
                                 <h3 className="text-lg font-semibold">
-                                    Added {"(" + addedList.length + ((addedList.length == 250) ? " MAX" : "") + ")"}: 
+                                    Added {"(" + addedList.length + ((addedList.length == 150) ? " MAX" : "") + ")"}: 
                                 </h3>
                                 <div className="h-1/2 overflow-y-auto">
                                     {added_swimmers}
