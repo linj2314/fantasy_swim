@@ -107,7 +107,7 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-                <div className="basis-5/6">
+                <div className="basis-5/6 h-full">
                     <Outlet/>
                 </div>
             </div>
