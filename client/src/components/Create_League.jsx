@@ -116,12 +116,6 @@ export default function Create_League({show, close}) {
             const result = await response.json();
             const league_id = result.id;
 
-            /*
-            if (!id) {
-                verify();
-            }
-            */
-
             const response2 = await fetch("https://fantasy-swim-backend.vercel.app/user/league", {
                 method: "PATCH",
                 headers: {
@@ -133,13 +127,18 @@ export default function Create_League({show, close}) {
                 }),
             });
 
+            if (response2.status == 507) {
+                setErrorMessage("Max leagues reached; cannot create new league");
+                return;
+            }
+
             if (!response2.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
         } catch(error) {
             console.error("An error occured while creating league", error);
         } finally {
-            console.log("League Created!")
+            console.log("League Created!");
             close_window();
             reset_fields();
             window.location.reload();
