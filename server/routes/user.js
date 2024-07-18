@@ -112,7 +112,8 @@ router.patch('/league', async (req, res) => {
         }
 
         if (user.leagues.length == 3) {
-            const league = await League.findByIdAndDelete(req.body.league_id);
+            const league = await League.findById(req.body.league_id);
+            await league.deleteOne();
             return res.status(507).json({error: "too_many_leagues"});
         }
 

@@ -106,6 +106,11 @@ export default function Leagues_Display() {
                         When you join/create leagues, they will appear here
                     </div>
                 )}
+                {leagues.length == 3 && (
+                    <div className="col-span-3 row-span-3 flex items-center justify-center">
+                        Note: at this time, you are limited to participating in at most 3 leagues concurrently
+                    </div>
+                )}
             </div>
         </>
     );
