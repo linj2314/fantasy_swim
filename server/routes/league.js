@@ -3,7 +3,6 @@ import { User, League } from "../db/schema.js";
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
 import {Options} from "selenium-webdriver/chrome.js";
 import crypto from "crypto";
-import { MongoDriverError } from "mongodb";
 import score from "../db/score.js";
 const options = new Options();
 options.addArguments('--remote-debugging-pipe');
