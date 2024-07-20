@@ -272,11 +272,9 @@ router.get("/update", async (req, res) => {
         const next_date = new Date(date_obj.getTime() + day);
         const today = new Date();
         
-        /*
         if (today.toDateString() !== next_date.toDateString()) {
             return;
         }
-        */
 
         let re = /<table class=".*?table.*?">[\s\S]*?<\/table>/m;
         let ret = str.match(re);
