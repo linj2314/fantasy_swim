@@ -272,11 +272,9 @@ router.get("/update", async (req, res) => {
         const next_date = new Date(date_obj.getTime() + day);
         const today = new Date();
         
-        /*
         if (today.toDateString() !== next_date.toDateString()) {
             return;
         }
-        */
 
         let re = /<table class=".*?table.*?">[\s\S]*?<\/table>/m;
         let ret = str.match(re);
@@ -338,8 +336,9 @@ router.get("/update", async (req, res) => {
             if (league.status == 1) {
                 const date = new Date();
                 date.setHours(0, 0, 0, 0);
+                date.setDate(date.getDate() + 1);
                 league.start_date = date;
-                league.status == 2;
+                league.status = 2;
             } else if (league.status == 2) {
                 let date = new Date();
                 date.setHours(0, 0, 0, 0);
