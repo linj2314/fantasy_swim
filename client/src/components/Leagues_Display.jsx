@@ -66,7 +66,7 @@ export default function Leagues_Display() {
     }
 
     function League_Window({ obj }) {
-        const statuses = ["League not yet started", "League in progress", "League finished"];
+        const statuses = ["League not yet started", "Drafting", "League in progress", "League finished"];
 
         return(
             <div 
